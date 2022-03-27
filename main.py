@@ -1,10 +1,21 @@
+import os
+import random
+import subprocess
+
 import cma
 import numpy as np
-# from Bio.Seq import Seq
+from Bio import SeqIO
+from Bio.Seq import Seq
 # from Bio.SeqUtils import seq3
+from Bio.SeqRecord import SeqRecord
+from scipy.special import softmax
+import shutil
+
 import matplotlib
 matplotlib.use('TKAgg')
-# ['GTK3Agg', 'GTK3Cairo', 'GTK4Agg', 'GTK4Cairo', 'MacOSX', 'nbAgg', 'QtAgg', 'QtCairo', 'Qt5Agg', 'Qt5Cairo', 'TkAgg', 'TkCairo', 'WebAgg', 'WX', 'WXAgg', 'WXCairo', 'agg', 'cairo', 'pdf', 'pgf', 'ps', 'svg', 'template']
+
+
+spike = "7cr5_SPIKE.pdb"
 
 # use Fv only 7cr5
 # we can align with ANARCY - add spacers. Do we want it?
@@ -74,7 +85,9 @@ def residue2vector(res):
 def np2seq(emb):
     seq = ""
     for a in emb:
-        seq = seq + residue_letters[np.dot(np.expand_dims(a, axis=0), np.array(range(21)))[0]]
+        new_letter = residue_letters[softmax(a).argmax()]
+        if new_letter != '-':
+            seq = seq + new_letter
     return seq
 
 def seq2np(seq):
@@ -126,24 +139,68 @@ def test_full_seq():
 #     print(H)
 #     print(L)
 
+def check_stop(a):
+    # how do we stop the optimiser correctly??
+    if a.countiter > 10000:
+        print(a.countiter)
+
+def get_fitness(x):
+    HL = np2full_seq(x)
+    sequences = [SeqRecord(Seq(HL[0]), id='H', description="Optimiser Sample H"), SeqRecord(Seq(HL[1]), id="L", description="Optimiser Sample L")]
+    SeqIO.write(sequences, "./data/fitness.fasta", "fasta")
+
+    # run AlphaFold
+    output = subprocess.run(["./run_alpha.sh", "./data/fitness.fasta"], capture_output=False, check=True)
+
+    # copy alphafold results to data dir
+    os.system("cp /tmp/alphafold/fitness/renamed_* ./data/")
+
+    # run docking/score
+    best_score = 999
+    for i in range(5):
+        output = subprocess.run(["./run_score.sh", f"/workdir/renamed_{i}.pdb", "/workdir/" + spike], capture_output=True, check=True)
+        score = float(output.stdout.split()[-1])
+        if score < best_score:
+            best_score = score
+
+    print(f"Best score: {best_score}")
+
+    return best_score
 
 if __name__ == '__main__':
     # test_full_seq()
     # exit()
 
     x0 = seq2np(cdr_H1 + cdr_H2 + cdr_H3 + cdr_L1 + cdr_L2 + cdr_L3).flatten()
-    fun = cma.ff.rosen  # we could use `functools.partial(cma.ff.elli, cond=1e4)` to change the condition number to 1e4
 
-    # x0 = 4 * [21]  # initial solution
-    sigma0 = 1.0  # initial standard deviation to sample new solutions
+    fun = get_fitness
+    # fun = cma.ff.rosen  # we could use `functools.partial(cma.ff.elli, cond=1e4)` to change the condition number to 1e4
 
-    res, es = cma.fmin2(fun, x0, sigma0,
+    sigma0 = 0.3  # initial standard deviation to sample new solutions - should be ~ 1/4 of range
+
+    # # cfun = cma.ConstrainedFitnessAL(fun, constraints)  # unconstrained function with adaptive Lagrange multipliers
+    # es = cma.CMAEvolutionStrategy(x0, sigma0)
+    #
+    # while not es.stop():
+    #     X = es.ask()  # sample len(X) candidate solutions
+    #     es.tell(X, [fun(x) for x in X])
+    #     # cfun.update(es)
+    #     es.logger.add()  # for later plotting
+    #     es.disp()
+    # es.result_pretty()
+
+    res, es = cma.fmin2(fun, x0, sigma0, callback=check_stop,
                    options={
-                             'verb_time':0,
-                             'verb_disp': 500,
-                             'seed': 3},
-                   restarts=3)
+                            'maxiter': 100,
+                            'bounds': [-0.1, 1.1],
+                            'verb_time':0,
+                            'verb_disp': 500,
+                            'seed': 3},
+                   restarts=1)
 
-    print(np2full_seq(res[0]))
+
+    print(np2full_seq(res))
 
     es.plot()
+
+    es.result_pretty()
