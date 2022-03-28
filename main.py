@@ -150,7 +150,7 @@ def get_fitness(x):
     SeqIO.write(sequences, "./data/fitness.fasta", "fasta")
 
     # run AlphaFold
-    output = subprocess.run(["./run_alpha.sh", "./data/fitness.fasta"], capture_output=False, check=True)
+    output = subprocess.run(["./run_alpha.sh", "./data/fitness.fasta"], capture_output=True, check=True)
 
     # copy alphafold results to data dir
     os.system("cp /tmp/alphafold/fitness/renamed_* ./data/")
@@ -170,6 +170,8 @@ def get_fitness(x):
 if __name__ == '__main__':
     # test_full_seq()
     # exit()
+
+    os.mkdir("data")
 
     x0 = seq2np(cdr_H1 + cdr_H2 + cdr_H3 + cdr_L1 + cdr_L2 + cdr_L3).flatten()
 
@@ -191,7 +193,9 @@ if __name__ == '__main__':
 
     res, es = cma.fmin2(fun, x0, sigma0, callback=check_stop,
                    options={
-                            'maxiter': 100,
+                            'ftarget': -3.0,
+                            'popsize': 5,
+                            'maxiter': 12,
                             'bounds': [-0.1, 1.1],
                             'verb_time':0,
                             'verb_disp': 500,
