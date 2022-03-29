@@ -5,6 +5,6 @@
 cd data
 
 #source /home/kir/Apps/alphafold/venv/bin/activate
-docker run -t --gpus all -v $(pwd):/workdir --workdir /workdir molecule:0322.1 /usr/bin/python3 /opt/dock-n-score.py $1 $2
+docker run -t --gpus all -v $(pwd):/workdir --workdir /workdir molecule:0329.2 /usr/bin/python3 /opt/dock-n-score.py $1 $2
 #docker ps
 
