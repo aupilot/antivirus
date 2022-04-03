@@ -16,8 +16,8 @@ out_file = sys.argv[2]
 structure = parser.get_structure('kir', inp_file)
 
 renames = {
-    "A": "M",
-    "B": "N",
+    "A": "H",
+    "B": "L",
 }
 
 for model in structure:

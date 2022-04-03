@@ -20,31 +20,31 @@ spike = "7cr5_SPIKE.pdb"
 # use Fv only 7cr5
 # we can align with ANARCY - add spacers. Do we want it?
 # http://opig.stats.ox.ac.uk/webapps/newsabdab/sabpred/anarci/
-initial_H = "QVQLVESGGGVVQPGRSLRLSC AASGFTFSSYIMH WVRQAPGKGLEWVA VISYDGSNEA YADSVKGRFTISRDNSKNTLYLQMSSLRAEDTGVYYC ARETGDYSSSWYDS WGRGTLVTVSS"
-initial_L = "QLVLTQSPSASASLGASVKLTC TLSSGHSNYAIA WHQQQPEKGPRYLM KVNSDGSHTKGD GIPDRFSGSSSGAERYLTISSLQSEDEADYYC QTWGTGIQV FGGGTKLTVL"
+# initial_H = "QVQLVESGGGVVQPGRSLRLSC AASGFTFSSYIMH WVRQAPGKGLEWVA VISYDGSNEA YADSVKGRFTISRDNSKNTLYLQMSSLRAEDTGVYYC ARETGDYSSSWYDS WGRGTLVTVSS"
+# initial_L = "QLVLTQSPSASASLGASVKLTC TLSSGHSNYAIA WHQQQPEKGPRYLM KVNSDGSHTKGD GIPDRFSGSSSGAERYLTISSLQSEDEADYYC QTWGTGIQV FGGGTKLTVL"
 
 # we split the sequence to cdr/framework regions. we won't  optimise on constant framework
 # TODO: automate cdr detection
 # https://github.com/mit-ll/Insilico_Ab_Variant_Generator/blob/main/scripts/parse_region.py
-framework_H1 = "QVQLVESGGGVVQPGRSLRLSC"
-cdr_H1 = "AASGFTFSSYIMH"
-# cdr_H1 = "AASGFTF----SSYIMH"
+framework_H1 = "QVQLVESGGGVVQPGRSLRLSC"   # 1-21
+# cdr_H1 = "AASGFTFSSYIMH"
+cdr_H1 = "AASGFTF----SSYIMH"
 framework_H2 = "WVRQAPGKGLEWVA"
-cdr_H2 = "VISYDGSNEA"
-# cdr_H2 = "VISYD--GSNEA"
+# cdr_H2 = "VISYDGSNEA"
+cdr_H2 = "VISYD--GSNEA"
 framework_H3 = "YADSVKGRFTISRDNSKNTLYLQMSSLRAEDTGVYYC"
 cdr_H3 = "ARETGDYSSSWYDS"
 framework_H4 = "WGRGTLVTVSS"
 
 framework_L1 = "QLVLTQSPSASASLGASVKLTC"
-cdr_L1 = "TLSSGHSNYAIA"
-# cdr_L1 = "TLSSGHS-----NYAIA"
+# cdr_L1 = "TLSSGHSNYAIA"
+cdr_L1 = "TLSSGHS-----NYAIA"
 framework_L2 = "WHQQQPEKGPRYLM"
-cdr_L2 = "KVNSDGSHTKGD"
-# cdr_L2 = "KVNSD---GSHTKGD"
+# cdr_L2 = "KVNSDGSHTKGD"
+cdr_L2 = "KVNSD---GSHTKGD"
 framework_L3 = "GIPDRFSGSSSGAERYLTISSLQSEDEADYYC"
-cdr_L3 = "QTWGTGIQV"
-# cdr_L3 = "QTWGT----GIQV"
+# cdr_L3 = "QTWGTGIQV"
+cdr_L3 = "QTWGT----GIQV"
 framework_L4 = "FGGGTKLTVL"
 
 
@@ -72,15 +72,18 @@ residue_letters = [
     "Y",
 ]
 
-
-# h_len_opt = len(cdr_H1) + len(cdr_H2) + len(cdr_H3)
-# l_len_opt = len(cdr_L1) + len(cdr_L2) + len(cdr_L3)
+# list of pieces to block when docking - four from H and four from L
+# as long as the length of the Ab varies, we need to compare the new sequence every time with the framework pieces to block
+block= ["LVESGGGVVQPGRSLRL", "WVRQAPGKGLEWV", "YADSVKGR", "GTLVTVSS",
+        framework_L1, framework_L2, framework_L3, framework_L4]
 
 # TODO: learn better embedding with lower dimensions and smooth space. Perhaps 2-3 layer net?
 residue_embedding = np.eye(21,21,dtype=int)
 
-def residue2vector(res):
-    return residue_embedding[residue_letters.index(res)]
+
+def residue2vector(residue):
+    return residue_embedding[residue_letters.index(residue)]
+
 
 def np2seq(emb):
     seq = ""
@@ -90,16 +93,19 @@ def np2seq(emb):
             seq = seq + new_letter
     return seq
 
+
 def seq2np(seq):
     out = []
     for res in seq:
         out.append(residue2vector(res))
-    return  np.array(out)
+    return np.array(out)
+
 
 def hl2np(h, l):
     h_np = seq2np(h)
     l_np = seq2np(l)
     return np.vstack((h_np, l_np)).flatten()
+
 
 def np2full_seq(emb):
     hl_np = np.reshape(emb, (-1,21))
@@ -120,7 +126,7 @@ def np2full_seq(emb):
         framework_L2 + hl_seq[ptr1:ptr2] + \
         framework_L3 + hl_seq[ptr2:ptr3] + framework_L4
 
-    return H,L
+    return H, L
 
 
 def test_seq():
@@ -144,10 +150,16 @@ def check_stop(a):
     if a.countiter > 10000:
         print(a.countiter)
 
+
 def get_fitness(x):
     HL = np2full_seq(x)
     sequences = [SeqRecord(Seq(HL[0]), id='H', description="Optimiser Sample H"), SeqRecord(Seq(HL[1]), id="L", description="Optimiser Sample L")]
     SeqIO.write(sequences, "./data/fitness.fasta", "fasta")
+    SeqIO.write(sequences, f"./data/{get_fitness.n}_fitness.fasta", "fasta")
+    get_fitness.n = get_fitness.n+1
+
+    # before docking we create 2 files with residues to block on receptor side
+    save_blocking_positions(HL[0], HL[1])
 
     # run AlphaFold
     output = subprocess.run(["./run_alpha.sh", "./data/fitness.fasta"], capture_output=True, check=True)
@@ -170,9 +182,33 @@ def get_fitness(x):
 
     return average_score #best_score
 
+# create a file with receptor residues to block (for MEGADOCK)
+# we assume that the block seqs always exist!
+def save_blocking_positions(sequence_H, sequence_L):
+    ff = open("data/block-H.txt", "wt")
+    ff.write("H ")
+    for iii in range(4):
+        ptr_from = sequence_H.find(block[iii])
+        if ptr_from < 0: raise Exception('Blocking sequence problem! (H)')
+        ptr_to = ptr_from + len(block[iii])
+        ff.write(f"{ptr_from+3}-{ptr_to-3},")
+    ff.close()
+
+    ff = open("data/block-L.txt", "wt")
+    ff.write("L ")
+    for iii in range(4):
+        ptr_from = sequence_L.find(block[iii+4])
+        if ptr_from < 0: raise Exception('Blocking sequence problem! (L)')
+        ptr_to = ptr_from + len(block[iii+4])
+        ff.write(f"{ptr_from+3}-{ptr_to-3},")
+    ff.close()
+
+
 if __name__ == '__main__':
     # test_full_seq()
     # exit()
+
+    get_fitness.n = 0
 
     if not os.path.exists("data"):
         os.mkdir("data")
@@ -199,12 +235,12 @@ if __name__ == '__main__':
                    options={
                             'ftarget': -3.0,
                             'popsize': 5,
-                            'maxiter': 10,
+                            'maxiter': 8,
                             'bounds': [-0.1, 1.1],
                             'verb_time':0,
                             'verb_disp': 500,
                             'seed': 3},
-                   restarts=1)
+                   restarts=0)
 
 
     print(np2full_seq(res))
