@@ -26,7 +26,7 @@ spike = "7cr5_SPIKE.pdb"
 # we split the sequence to cdr/framework regions. we won't  optimise on constant framework
 # TODO: automate cdr detection
 # https://github.com/mit-ll/Insilico_Ab_Variant_Generator/blob/main/scripts/parse_region.py
-framework_H1 = "QVQLVESGGGVVQPGRSLRLSC"   # 1-21
+framework_H1 = "QVQLVESGGGVVQPGRSLRLSC"   # 1-22
 # cdr_H1 = "AASGFTFSSYIMH"
 cdr_H1 = "AASGFTF----SSYIMH"
 framework_H2 = "WVRQAPGKGLEWVA"
@@ -74,8 +74,10 @@ residue_letters = [
 
 # list of pieces to block when docking - four from H and four from L
 # as long as the length of the Ab varies, we need to compare the new sequence every time with the framework pieces to block
-block= ["LVESGGGVVQPGRSLRL", "WVRQAPGKGLEWV", "YADSVKGR", "GTLVTVSS",
-        framework_L1, framework_L2, framework_L3, framework_L4]
+block= ["LVESGGGVVQPGRSLR", "RQAPGKGLEW", "LQMSSLRAEDTGVYYC", "GTLVTV",
+        "LTQSPSASASLG", "QQPEKGPR", "SSSGAERYLT", "FGGGTK"]
+# block= ["LVESGGGVVQPGRSLRL", "WVRQAPGKGLEWV", "YADSVKGR", "GTLVTVSS",
+#         framework_L1, framework_L2, framework_L3, framework_L4]
 
 # TODO: learn better embedding with lower dimensions and smooth space. Perhaps 2-3 layer net?
 residue_embedding = np.eye(21,21,dtype=int)
@@ -89,8 +91,8 @@ def np2seq(emb):
     seq = ""
     for a in emb:
         new_letter = residue_letters[softmax(a).argmax()]
-        if new_letter != '-':
-            seq = seq + new_letter
+        # if new_letter != '-':
+        seq = seq + new_letter
     return seq
 
 
@@ -125,6 +127,10 @@ def np2full_seq(emb):
     L = framework_L1 + hl_seq[ptr0:ptr1] + \
         framework_L2 + hl_seq[ptr1:ptr2] + \
         framework_L3 + hl_seq[ptr2:ptr3] + framework_L4
+
+    # remove spacers
+    H = H.replace("-", "")
+    L = L.replace("-", "")
 
     return H, L
 
@@ -186,21 +192,21 @@ def get_fitness(x):
 # we assume that the block seqs always exist!
 def save_blocking_positions(sequence_H, sequence_L):
     ff = open("data/block-H.txt", "wt")
-    ff.write("H ")
+    # ff.write("H ")
     for iii in range(4):
         ptr_from = sequence_H.find(block[iii])
         if ptr_from < 0: raise Exception('Blocking sequence problem! (H)')
         ptr_to = ptr_from + len(block[iii])
-        ff.write(f"{ptr_from+3}-{ptr_to-3},")
+        ff.write(f"{ptr_from+1}-{ptr_to},")
     ff.close()
 
     ff = open("data/block-L.txt", "wt")
-    ff.write("L ")
+    # ff.write("L ")
     for iii in range(4):
         ptr_from = sequence_L.find(block[iii+4])
         if ptr_from < 0: raise Exception('Blocking sequence problem! (L)')
         ptr_to = ptr_from + len(block[iii+4])
-        ff.write(f"{ptr_from+3}-{ptr_to-3},")
+        ff.write(f"{ptr_from+1}-{ptr_to},")
     ff.close()
 
 
