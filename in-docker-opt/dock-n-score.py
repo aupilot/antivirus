@@ -4,13 +4,20 @@ import os
 import sys
 import subprocess
 import argparse
+from os import listdir
+
 import numpy as np
 import random
 
-n_scored_decoys = 6
+
+##### this script sits inside a container
+
+n_scored_decoys = 8
 records = ('ATOM', 'HETATM', 'ANISOU', 'TER')
 receptor_chains = {'H', 'L', 'M', 'N'}
 
+# all decoys with the score lower than this will not be scored
+dla_ranker_threshold = 0.05
 
 def megadock(receptor=None, legand=None):
     # read the parameters for blocking H
@@ -57,10 +64,20 @@ def vina_score():
     tmp_receptor = "/opt/var/receptor.pdb"
     tmp_ligand = "/opt/var/ligand.pdb"
 
-    scores = np.zeros((n_scored_decoys))
+    decoy_list = listdir("/opt/var/good_decoys")
 
-    for d in range(n_scored_decoys):
-        pdbfh = open(f"/opt/var/decoys/decoy.{d+1}.pdb", 'r')
+    scores = []
+    decoy_no = 0
+    for dec in decoy_list:
+        if not dec.endswith("pdb"):
+            continue
+        if not dec.startswith("decoy"):
+            continue
+
+        decoy_no += 1
+    # for d in range(n_scored_decoys):
+    #     pdbfh = open(f"/opt/var/decoys/decoy.{d+1}.pdb", 'r')
+        pdbfh = open(dec, 'r')
         chain_data = {}  # {chain_id: lines}
         prev_chain = None
         for line in pdbfh:
@@ -105,12 +122,14 @@ def vina_score():
         affinity_lines  = [match for match in out_text if "Affinity" in match]
 
         affinity_txt = affinity_lines[0]
-        print(affinity_txt)
+        print(f"Dec {decoy_no} {affinity_txt}")
 
-        scores[d] = float(affinity_txt.split()[1])
+        scores.append(float(affinity_txt.split()[1]))
 
-    return scores
-
+    if len(scores) == 0:
+        return 10.0
+    else:
+        return np.min(np.array(scores))
 
 
 def get_args():
@@ -170,8 +189,10 @@ if __name__ == '__main__':
     print(args.legand)
     megadock(args.receptor, args.legand)
 
+    print("Re-score with DLA")
+    output = subprocess.run(["python3","/opt/DLA-Ranker/dla_ranker.py"], capture_output=False, check=True)
+
     print('Scoring with Vina:')
-    scores = vina_score()
+    min_score = vina_score()
 
-    print(f"The best score is {np.min(scores)}")
-
+    print(f"The best score is {min_score}")

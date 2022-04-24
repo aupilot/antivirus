@@ -1,6 +1,7 @@
 import os
 import random
 import subprocess
+import time
 
 import cma
 import numpy as np
@@ -27,24 +28,24 @@ spike = "7cr5_SPIKE.pdb"
 # TODO: automate cdr detection
 # https://github.com/mit-ll/Insilico_Ab_Variant_Generator/blob/main/scripts/parse_region.py
 framework_H1 = "QVQLVESGGGVVQPGRSLRLSC"   # 1-22
-# cdr_H1 = "AASGFTFSSYIMH"
-cdr_H1 = "AASGFTF----SSYIMH"
+cdr_H1 = "AASGFTFSSYIMH"
+# cdr_H1 = "AASGFTF----SSYIMH"
 framework_H2 = "WVRQAPGKGLEWVA"
-# cdr_H2 = "VISYDGSNEA"
-cdr_H2 = "VISYD--GSNEA"
+cdr_H2 = "VISYDGSNEA"
+# cdr_H2 = "VISYD--GSNEA"
 framework_H3 = "YADSVKGRFTISRDNSKNTLYLQMSSLRAEDTGVYYC"
 cdr_H3 = "ARETGDYSSSWYDS"
 framework_H4 = "WGRGTLVTVSS"
 
 framework_L1 = "QLVLTQSPSASASLGASVKLTC"
-# cdr_L1 = "TLSSGHSNYAIA"
-cdr_L1 = "TLSSGHS-----NYAIA"
+cdr_L1 = "TLSSGHSNYAIA"
+# cdr_L1 = "TLSSGHS-----NYAIA"
 framework_L2 = "WHQQQPEKGPRYLM"
-# cdr_L2 = "KVNSDGSHTKGD"
-cdr_L2 = "KVNSD---GSHTKGD"
+cdr_L2 = "KVNSDGSHTKGD"
+# cdr_L2 = "KVNSD---GSHTKGD"
 framework_L3 = "GIPDRFSGSSSGAERYLTISSLQSEDEADYYC"
-# cdr_L3 = "QTWGTGIQV"
-cdr_L3 = "QTWGT----GIQV"
+cdr_L3 = "QTWGTGIQV"
+# cdr_L3 = "QTWGT----GIQV"
 framework_L4 = "FGGGTKLTVL"
 
 
@@ -167,17 +168,19 @@ def get_fitness(x):
     # before docking we create 2 files with residues to block on receptor side
     save_blocking_positions(HL[0], HL[1])
 
-    # run AlphaFold
-    output = subprocess.run(["./run_alpha.sh", "./data/fitness.fasta"], capture_output=True, check=True)
+    # run AlphaFold. To run multiple AFs set the thread_no to different ints!
+    thread_no = 0
+    output = subprocess.run(["./run_alpha.sh", "./data/fitness.fasta", f"{thread_no}"], capture_output=True, check=True)
 
     # copy alphafold results to data dir
-    os.system("cp /tmp/alphafold/fitness/renamed_* ./data/")
+    os.makedirs(f"./data/th.{thread_no}/", exist_ok=True)
+    os.system(f"cp -f /tmp/alphafold/th.{thread_no}/fitness/renamed_* ./data/th.{thread_no}/")
 
     # run docking/score
     average_score = 0
     best_score = 999
     for i in range(5):
-        output = subprocess.run(["./run_score.sh", f"/workdir/renamed_{i}.pdb", "/workdir/" + spike], capture_output=True, check=True)
+        output = subprocess.run(["./run_score.sh", f"/workdir/th.{thread_no}/renamed_{i}.pdb", "/workdir/" + spike], capture_output=True, check=True)  # these paths are inside the container!
         score = float(output.stdout.split()[-1])
         average_score = average_score + score
         if score < best_score:
@@ -213,7 +216,7 @@ def save_blocking_positions(sequence_H, sequence_L):
 if __name__ == '__main__':
     # test_full_seq()
     # exit()
-
+    print(time.asctime())
     get_fitness.n = 0
 
     if not os.path.exists("data"):
@@ -224,7 +227,7 @@ if __name__ == '__main__':
     fun = get_fitness
     # fun = cma.ff.rosen  # we could use `functools.partial(cma.ff.elli, cond=1e4)` to change the condition number to 1e4
 
-    sigma0 = 0.25  # initial standard deviation to sample new solutions - should be ~ 1/4 of range
+    sigma0 = 0.1  # initial standard deviation to sample new solutions - should be ~ 1/4 of range
 
     # # cfun = cma.ConstrainedFitnessAL(fun, constraints)  # unconstrained function with adaptive Lagrange multipliers
     # es = cma.CMAEvolutionStrategy(x0, sigma0)
@@ -240,7 +243,7 @@ if __name__ == '__main__':
     res, es = cma.fmin2(fun, x0, sigma0, callback=check_stop,
                    options={
                             'ftarget': -3.0,
-                            'popsize': 5,
+                            'popsize': 6,
                             'maxiter': 8,
                             'bounds': [-0.1, 1.1],
                             'verb_time':0,
@@ -250,6 +253,7 @@ if __name__ == '__main__':
 
 
     print(np2full_seq(res))
+    print(time.asctime())
 
     es.plot()
 

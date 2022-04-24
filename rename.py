@@ -1,8 +1,11 @@
 #!/usr/bin/python3
 
-
 import sys
 from Bio.PDB import PDBList, PDBIO, PDBParser
+
+"""
+Renames chains in PDB file
+"""
 
 pdbl = PDBList()
 io = PDBIO()
