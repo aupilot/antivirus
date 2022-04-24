@@ -243,8 +243,8 @@ if __name__ == '__main__':
     res, es = cma.fmin2(fun, x0, sigma0, callback=check_stop,
                    options={
                             'ftarget': -3.0,
-                            'popsize': 6,
-                            'maxiter': 8,
+                            'popsize': 12,
+                            'maxiter': 10,
                             'bounds': [-0.1, 1.1],
                             'verb_time':0,
                             'verb_disp': 500,

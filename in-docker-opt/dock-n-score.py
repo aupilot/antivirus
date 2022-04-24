@@ -12,7 +12,9 @@ import random
 
 ##### this script sits inside a container
 
-n_scored_decoys = 8
+good_decoys = "/opt/var/good_decoys/"
+
+# n_scored_decoys = 8
 records = ('ATOM', 'HETATM', 'ANISOU', 'TER')
 receptor_chains = {'H', 'L', 'M', 'N'}
 
@@ -21,7 +23,7 @@ dla_ranker_threshold = 0.05
 
 def megadock(receptor=None, legand=None):
     # read the parameters for blocking H
-    blk_file = open("/workdir/data/block-H.txt")
+    blk_file = open("/workdir/block-H.txt")
     blk = blk_file.readline().rstrip('\n')
     tmp_name_H = f"/opt/var/{random.randint(10000, 99999)}.pdb"
 
@@ -37,7 +39,7 @@ def megadock(receptor=None, legand=None):
     blk_file.close()
 
     # read the parameters for blocking L
-    blk_file = open("/workdir/data/block-L.txt")
+    blk_file = open("/workdir/block-L.txt")
     blk = blk_file.readline().rstrip('\n')
     tmp_name_L = f"/opt/var/{random.randint(10000, 99999)}.pdb"
 
@@ -64,7 +66,7 @@ def vina_score():
     tmp_receptor = "/opt/var/receptor.pdb"
     tmp_ligand = "/opt/var/ligand.pdb"
 
-    decoy_list = listdir("/opt/var/good_decoys")
+    decoy_list = listdir(good_decoys)
 
     scores = []
     decoy_no = 0
@@ -77,7 +79,7 @@ def vina_score():
         decoy_no += 1
     # for d in range(n_scored_decoys):
     #     pdbfh = open(f"/opt/var/decoys/decoy.{d+1}.pdb", 'r')
-        pdbfh = open(dec, 'r')
+        pdbfh = open(good_decoys+dec, 'r')
         chain_data = {}  # {chain_id: lines}
         prev_chain = None
         for line in pdbfh:
