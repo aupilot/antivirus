@@ -15,6 +15,7 @@ import shutil
 import matplotlib
 matplotlib.use('TKAgg')
 
+from ttictoc import tic,toc
 
 spike = "7cr5_SPIKE.pdb"
 
@@ -165,9 +166,6 @@ def get_fitness(x):
     SeqIO.write(sequences, f"./data/{get_fitness.n}_fitness.fasta", "fasta")
     get_fitness.n = get_fitness.n+1
 
-    # before docking we create 2 files with residues to block on receptor side
-    save_blocking_positions(HL[0], HL[1])
-
     # run AlphaFold. To run multiple AFs set the thread_no to different ints!
     thread_no = 0
     output = subprocess.run(["./run_alpha.sh", "./data/fitness.fasta", f"{thread_no}"], capture_output=True, check=True)
@@ -189,7 +187,8 @@ def get_fitness(x):
 
     print(f"Best score: {best_score}, Average score {average_score}")
 
-    return average_score #best_score
+    # return average_score #best_score
+    return best_score
 
 # create a file with receptor residues to block (for MEGADOCK)
 # we assume that the block seqs always exist!
@@ -213,48 +212,154 @@ def save_blocking_positions(sequence_H, sequence_L):
     ff.close()
 
 
+def fake_fitness(arg):
+    return random.random()
+
+
+# input - list of 2 samples
+def double_fun(X):
+    # return (random.random(), random.random())     # test
+
+    tic()
+    ##### these 2 must be run in parallel
+
+    thread_no = 0
+    # prepare thread
+    HL = np2full_seq(X[thread_no])
+    sequences = [SeqRecord(Seq(HL[0]), id='H', description="Optimiser Sample H"), SeqRecord(Seq(HL[1]), id="L", description="Optimiser Sample L")]
+    SeqIO.write(sequences, f"./data/fitness.{thread_no}.fasta", "fasta")
+    # SeqIO.write(sequences, f"./data/{get_fitness.n}_fitness.{thread_no}.fasta", "fasta")        # save temporary results
+    # run AlphaFold.
+    output = subprocess.run(["./run_alpha.sh", f"./data/fitness.{thread_no}.fasta", f"{thread_no}"], capture_output=True, check=True)
+    # copy alphafold results to data dir
+    os.makedirs(f"./data/th.{thread_no}/", exist_ok=True)
+    os.system(f"cp -f /tmp/alphafold/th.{thread_no}/fitness/renamed_* ./data/th.{thread_no}/")
+
+    #####
+    thread_no = 1
+    # prepare thread
+    HL = np2full_seq(X[thread_no])
+    sequences = [SeqRecord(Seq(HL[0]), id='H', description="Optimiser Sample H"), SeqRecord(Seq(HL[1]), id="L", description="Optimiser Sample L")]
+    SeqIO.write(sequences, f"./data/fitness.{thread_no}.fasta", "fasta")
+    # SeqIO.write(sequences, f"./data/{get_fitness.n}_fitness.{thread_no}.fasta", "fasta")        # save temporary results
+    # run AlphaFold.
+    output = subprocess.run(["./run_alpha.sh", f"./data/fitness.{thread_no}.fasta", f"{thread_no}"], capture_output=True, check=True)
+    # copy alphafold results to data dir
+    os.makedirs(f"./data/th.{thread_no}/", exist_ok=True)
+    os.system(f"cp -f /tmp/alphafold/th.{thread_no}/fitness/renamed_* ./data/th.{thread_no}/")
+
+    ##### the following must run in sequence
+
+    # run docking/score for AF thread 0
+    thread_no = 0
+    average_score = 0
+    best_score = 999
+    for i in range(5):
+        output = subprocess.run(["./run_score.sh", f"/workdir/th.{thread_no}/renamed_{i}.pdb", "/workdir/" + spike], capture_output=True, check=True)  # these paths are inside the container!
+        score = float(output.stdout.split()[-1])
+        average_score = average_score + score
+        if score < best_score:
+            best_score = score
+    average_score = average_score / 5
+    best_score_0 = best_score
+    average_score_0 = average_score
+
+    # run docking/score for AF thread 1
+    thread_no = 1
+    average_score = 0
+    best_score = 999
+    for i in range(5):
+        output = subprocess.run(["./run_score.sh", f"/workdir/th.{thread_no}/renamed_{i}.pdb", "/workdir/" + spike], capture_output=True, check=True)  # these paths are inside the container!
+        score = float(output.stdout.split()[-1])
+        average_score = average_score + score
+        if score < best_score:
+            best_score = score
+    average_score = average_score / 5
+    best_score_1 = best_score
+    average_score_1 = average_score
+
+    print(f"Best 0,1: {best_score_0:.4f}, {best_score_1:.4f}, Average 0,1: {average_score_0:.4f} {average_score_1:.4f}, {toc()}")
+
+    # return average_score #best_score
+    return (best_score_0, best_score_1)
+
+
 if __name__ == '__main__':
     # test_full_seq()
     # exit()
     print(time.asctime())
-    get_fitness.n = 0
 
     if not os.path.exists("data"):
         os.mkdir("data")
 
     x0 = seq2np(cdr_H1 + cdr_H2 + cdr_H3 + cdr_L1 + cdr_L2 + cdr_L3).flatten()
 
-    fun = get_fitness
-    # fun = cma.ff.rosen  # we could use `functools.partial(cma.ff.elli, cond=1e4)` to change the condition number to 1e4
+    # before docking we create 2 files with residues to block on receptor side. These should be unchangeable residues
+    HL = np2full_seq(x0)
+    save_blocking_positions(HL[0], HL[1])
+
+    # fun = get_fitness
+    # get_fitness.n = 0
+    # fun = fake_fitness
+    fun = double_fun
 
     sigma0 = 0.1  # initial standard deviation to sample new solutions - should be ~ 1/4 of range
 
     # # cfun = cma.ConstrainedFitnessAL(fun, constraints)  # unconstrained function with adaptive Lagrange multipliers
-    # es = cma.CMAEvolutionStrategy(x0, sigma0)
-    #
-    # while not es.stop():
-    #     X = es.ask()  # sample len(X) candidate solutions
-    #     es.tell(X, [fun(x) for x in X])
-    #     # cfun.update(es)
-    #     es.logger.add()  # for later plotting
-    #     es.disp()
-    # es.result_pretty()
-
-    res, es = cma.fmin2(fun, x0, sigma0, callback=check_stop,
-                   options={
+    es = cma.CMAEvolutionStrategy(x0, sigma0,
+                        inopts={
                             'ftarget': -3.0,
-                            'popsize': 12,
-                            'maxiter': 10,
+                            'popsize': 10,
+                            'maxiter': 12,
                             'bounds': [-0.1, 1.1],
                             'verb_time':0,
                             'verb_disp': 500,
-                            'seed': 3},
-                   restarts=0)
+                            'seed': 3},)
 
+    while not es.stop():
+        X = es.ask()  # sample len(X) candidate solutions
 
-    print(np2full_seq(res))
-    print(time.asctime())
+        V = []
+        for i in range(len(X)//2):
+            x2 = (X[i*2], X[i*2+1])
+            v2 = fun(x2)
+            V.append(v2[0])
+            V.append(v2[1])
 
-    es.plot()
+        es.tell(X, V)
+        # es.tell(X, [fun(x) for x in X])
+
+        es.logger.add()  # for later plotting
+        es.disp()
 
     es.result_pretty()
+
+    # simple optimisation loop
+    # res, es = cma.fmin2(fun, x0, sigma0, callback=check_stop,
+    #                options={
+    #                         'ftarget': -3.0,
+    #                         'popsize': 12,
+    #                         'maxiter': 10,
+    #                         'bounds': [-0.1, 1.1],
+    #                         'verb_time':0,
+    #                         'verb_disp': 500,
+    #                         'seed': 3},
+    #                restarts=0)
+
+
+    # === es.result explanations: https://github.com/CMA-ES/pycma/blob/9b4eb5450c020ac99d637780a42c39788f1e1045/cma/evolution_strategy.py#L977
+
+    # res = np2full_seq(es.result.xbest)
+    # the result as the mean of the metamodel gaussian rather than the best candidate:
+    res = es.result.xfavorite
+    seq = np2full_seq(res)
+
+    sequences = [SeqRecord(Seq(seq[0]), id='H', description="Optimised Ab H"), SeqRecord(Seq(seq[1]), id="L", description="Optimised Ab L")]
+    SeqIO.write(sequences, "results.fasta", "fasta")
+
+    print(seq)
+    print(f"The best score: {es.result.fbest}, iterations: {es.result.iterations}")
+    print(time.asctime())
+
+    # es.plot()
+    # matplotlib.pyplot.show(block=True)
