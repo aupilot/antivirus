@@ -2,6 +2,7 @@ import os
 import random
 import subprocess
 import time
+from multiprocessing import Pool
 
 import cma
 import numpy as np
@@ -172,7 +173,7 @@ def get_fitness(x):
 
     # copy alphafold results to data dir
     os.makedirs(f"./data/th.{thread_no}/", exist_ok=True)
-    os.system(f"cp -f /tmp/alphafold/th.{thread_no}/fitness/renamed_* ./data/th.{thread_no}/")
+    os.system(f"cp -f /tmp/alphafold/th.{thread_no}/fitness.{thread_no}/renamed_* ./data/th.{thread_no}/")
 
     # run docking/score
     average_score = 0
@@ -216,40 +217,44 @@ def fake_fitness(arg):
     return random.random()
 
 
+def run_alpha(thread_no: int):
+    # prepare thread
+    HL = np2full_seq(X[thread_no])
+    sequences = [SeqRecord(Seq(HL[0]), id='H', description="Optimiser Sample H"), SeqRecord(Seq(HL[1]), id="L", description="Optimiser Sample L")]
+    SeqIO.write(sequences, f"./data/fitness.{thread_no}.fasta", "fasta")
+    # SeqIO.write(sequences, f"./data/{get_fitness.n}_fitness.{thread_no}.fasta", "fasta")        # save temporary results
+
+    # run AlphaFold.
+    output = subprocess.run(["./run_alpha.sh", f"./data/fitness.{thread_no}.fasta", f"{thread_no}"], capture_output=True, check=True)
+
+    # copy alphafold results to data dir
+    os.makedirs(f"./data/th.{thread_no}/", exist_ok=True)
+    os.system(f"cp -f /tmp/alphafold/th.{thread_no}/fitness.{thread_no}/renamed_* ./data/th.{thread_no}/")
+
+
+def dock_score(thread_no: int):
+    pass
+
+
 # input - list of 2 samples
 def double_fun(X):
     # return (random.random(), random.random())     # test
-    print(X)
 
     tic()
-    ##### these 2 must be run in parallel
 
-    thread_no = 0
-    # prepare thread
-    HL = np2full_seq(X[thread_no])
-    sequences = [SeqRecord(Seq(HL[0]), id='H', description="Optimiser Sample H"), SeqRecord(Seq(HL[1]), id="L", description="Optimiser Sample L")]
-    SeqIO.write(sequences, f"./data/fitness.{thread_no}.fasta", "fasta")
-    # SeqIO.write(sequences, f"./data/{get_fitness.n}_fitness.{thread_no}.fasta", "fasta")        # save temporary results
-    # run AlphaFold.
-    output = subprocess.run(["./run_alpha.sh", f"./data/fitness.{thread_no}.fasta", f"{thread_no}"], capture_output=True, check=True)
-    # copy alphafold results to data dir
-    os.makedirs(f"./data/th.{thread_no}/", exist_ok=True)
-    os.system(f"cp -f /tmp/alphafold/th.{thread_no}/fitness/renamed_* ./data/th.{thread_no}/")
+    ##### these 2 calls must be run in parallel
+    # thread_no = 0
+    # run_alpha(thread_no)
+    # thread_no = 1
+    # run_alpha(thread_no)
 
-    #####
-    thread_no = 1
-    # prepare thread
-    HL = np2full_seq(X[thread_no])
-    sequences = [SeqRecord(Seq(HL[0]), id='H', description="Optimiser Sample H"), SeqRecord(Seq(HL[1]), id="L", description="Optimiser Sample L")]
-    SeqIO.write(sequences, f"./data/fitness.{thread_no}.fasta", "fasta")
-    # SeqIO.write(sequences, f"./data/{get_fitness.n}_fitness.{thread_no}.fasta", "fasta")        # save temporary results
-    # run AlphaFold.
-    output = subprocess.run(["./run_alpha.sh", f"./data/fitness.{thread_no}.fasta", f"{thread_no}"], capture_output=True, check=True)
-    # copy alphafold results to data dir
-    os.makedirs(f"./data/th.{thread_no}/", exist_ok=True)
-    os.system(f"cp -f /tmp/alphafold/th.{thread_no}/fitness/renamed_* ./data/th.{thread_no}/")
+    thread_numbers = (0,1)
+    with Pool() as pool:
+        pool.map(run_alpha, thread_numbers)
+        # pool.close()  # do we need close/join when using context?
+        # pool.join()
 
-    ##### the following must run in sequence
+    ##### the following must run in sequence (??? check that!)
 
     # run docking/score for AF thread 0
     thread_no = 0
