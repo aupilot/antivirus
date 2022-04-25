@@ -86,6 +86,8 @@ block= ["LVESGGGVVQPGRSLR", "RQAPGKGLEW", "LQMSSLRAEDTGVYYC", "GTLVTV",
 residue_embedding = np.eye(21,21,dtype=int)
 
 
+global_best_score = 999.0
+
 def residue2vector(residue):
     return residue_embedding[residue_letters.index(residue)]
 
@@ -233,13 +235,22 @@ def run_alpha(thread_no: int):
 
 
 def dock_score(thread_no: int):
-    pass
+    average_score = 0.0
+    best_score = 999.0
+    for i in range(5):
+        output = subprocess.run(["./run_score.sh", f"/workdir/th.{thread_no}/renamed_{i}.pdb", "/workdir/" + spike], capture_output=True, check=True)  # these paths are inside the container!
+        score = float(output.stdout.split()[-1])
+        average_score = average_score + score
+        if score < best_score:
+            best_score = score
+    average_score = average_score / 5.
+    return (best_score, average_score)
 
 
 # input - list of 2 samples
 def double_fun(X):
     # return (random.random(), random.random())     # test
-
+    global global_best_score
     tic()
 
     ##### these 2 calls must be run in parallel
@@ -249,41 +260,60 @@ def double_fun(X):
     # run_alpha(thread_no)
 
     thread_numbers = (0,1)
-    with Pool() as pool:
+    with Pool(2) as pool:
         pool.map(run_alpha, thread_numbers)
         # pool.close()  # do we need close/join when using context?
         # pool.join()
 
-    ##### the following must run in sequence (??? check that!)
+    ##### the following must run in sequence!
+
+    # with Pool(2) as pool:
+    #     result = pool.map(dock_score, thread_numbers)
+    #
+    # best_score_0, average_score_0 = result[0]
+    # best_score_1, average_score_1 = result[1]
 
     # run docking/score for AF thread 0
     thread_no = 0
-    average_score = 0
-    best_score = 999
+    average_score = 0.
+    best_score = 999.
+    best_score_idx = 999
     for i in range(5):
         output = subprocess.run(["./run_score.sh", f"/workdir/th.{thread_no}/renamed_{i}.pdb", "/workdir/" + spike], capture_output=True, check=True)  # these paths are inside the container!
         score = float(output.stdout.split()[-1])
         average_score = average_score + score
         if score < best_score:
             best_score = score
-    average_score = average_score / 5
+            best_score_idx = i
+    average_score = average_score / 5.
     best_score_0 = best_score
     average_score_0 = average_score
 
+    # optionally copy the best pdb to save it
+    if best_score_idx != 999 and best_score < global_best_score:
+        shutil.copy(f"./data/th.{thread_no}/renamed_{best_score_idx}.pdb", "./data/best.pdb")
+        global_best_score = best_score
+
     # run docking/score for AF thread 1
     thread_no = 1
-    average_score = 0
-    best_score = 999
+    average_score = 0.
+    best_score = 999.
+    best_score_idx = 999
     for i in range(5):
         output = subprocess.run(["./run_score.sh", f"/workdir/th.{thread_no}/renamed_{i}.pdb", "/workdir/" + spike], capture_output=True, check=True)  # these paths are inside the container!
         score = float(output.stdout.split()[-1])
         average_score = average_score + score
         if score < best_score:
             best_score = score
-        # print(score)
-    average_score = average_score / 5
+            best_score_idx = i
+    average_score = average_score / 5.
     best_score_1 = best_score
     average_score_1 = average_score
+
+    # optionally copy the best pdb to save it
+    if best_score_idx != 999 and best_score < global_best_score:
+        shutil.copy(f"./data/th.{thread_no}/renamed_{best_score_idx}.pdb", "./data/best.pdb")
+        global_best_score = best_score
 
     print(f"Best 0,1: {best_score_0:.4f}, {best_score_1:.4f}, Average 0,1: {average_score_0:.4f} {average_score_1:.4f}, {toc()}")
 
