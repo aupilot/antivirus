@@ -54,7 +54,6 @@ def megadock(receptor=None, legand=None):
 
     blk_file.close()
 
-
     output = subprocess.run(["/opt/megadock-4.1.1/megadock-gpu","-R", tmp_name_L, "-L", legand, "-r 3600", "-v 1.0", "-o", "/opt/var/dock.out" ], capture_output=False, check=True)
     output = subprocess.run(["/opt/megadock-4.1.1/mega-post.sh", receptor, legand], capture_output=False, check=True)
 
@@ -136,39 +135,16 @@ def vina_score():
 
 def get_args():
     """Gets command line arguments"""
-    # project_path = os.path.abspath(os.path.join(deepab.__file__, "../.."))
-
     desc = ('''
         Dock and Score.
         ''')
     parser = argparse.ArgumentParser(description=desc)
-
-    parser.add_argument("receptor",
-                        type=str,
-                        help="""
+    parser.add_argument("receptor", type=str, help="""
         Antibody PDB.
     """)
-
-    parser.add_argument("legand",
-                        type=str,
-                        help="""
+    parser.add_argument("legand", type=str, help="""
         Spike PDB.
     """)
-
-
-    # now = str(datetime.now().strftime('%y-%m-%d_%H:%M:%S'))
-
-    # default_pred_dir = os.path.join(project_path, "pred_{}".format(now))
-    # parser.add_argument("--pred_dir",
-    #                     type=str,
-    #                     default=default_pred_dir,
-    #                     help="Directory where results should be saved.")
-
-    # parser.add_argument("--use_gpu",
-    #                     default=False,
-    #                     action="store_true",
-    #                     help="Run model prediction on GPU.")
-
     return parser.parse_args()
 
 

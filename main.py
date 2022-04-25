@@ -219,6 +219,7 @@ def fake_fitness(arg):
 # input - list of 2 samples
 def double_fun(X):
     # return (random.random(), random.random())     # test
+    print(X)
 
     tic()
     ##### these 2 must be run in parallel
@@ -274,14 +275,16 @@ def double_fun(X):
         average_score = average_score + score
         if score < best_score:
             best_score = score
+        # print(score)
     average_score = average_score / 5
     best_score_1 = best_score
     average_score_1 = average_score
 
     print(f"Best 0,1: {best_score_0:.4f}, {best_score_1:.4f}, Average 0,1: {average_score_0:.4f} {average_score_1:.4f}, {toc()}")
 
-    # return average_score #best_score
-    return (best_score_0, best_score_1)
+    # TODO: Find out what is better average or best
+    return (average_score_0, average_score_1)
+    # return (best_score_0, best_score_1)
 
 
 if __name__ == '__main__':
@@ -303,7 +306,7 @@ if __name__ == '__main__':
     # fun = fake_fitness
     fun = double_fun
 
-    sigma0 = 0.1  # initial standard deviation to sample new solutions - should be ~ 1/4 of range
+    sigma0 = 0.2  # initial standard deviation to sample new solutions - should be ~ 1/4 of range
 
     # # cfun = cma.ConstrainedFitnessAL(fun, constraints)  # unconstrained function with adaptive Lagrange multipliers
     es = cma.CMAEvolutionStrategy(x0, sigma0,
