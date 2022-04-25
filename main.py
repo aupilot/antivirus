@@ -3,7 +3,6 @@ import random
 import subprocess
 import time
 from multiprocessing import Pool
-
 import cma
 import numpy as np
 from Bio import SeqIO
@@ -12,13 +11,14 @@ from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 from scipy.special import softmax
 import shutil
-
 import matplotlib
 matplotlib.use('TKAgg')
-
 from ttictoc import tic,toc
+from igfold import IgFoldRunner, init_pyrosetta
+from prody import parsePDB, writePDB
 
 spike = "7cr5_SPIKE.pdb"
+ig_fold_pdb = "ig_fold.pdb"
 
 # use Fv only 7cr5
 # we can align with ANARCY - add spacers. Do we want it?
@@ -193,6 +193,7 @@ def get_fitness(x):
     # return average_score #best_score
     return best_score
 
+
 # create a file with receptor residues to block (for MEGADOCK)
 # we assume that the block seqs always exist!
 def save_blocking_positions(sequence_H, sequence_L):
@@ -259,7 +260,8 @@ def double_fun(X):
     # thread_no = 1
     # run_alpha(thread_no)
 
-    thread_numbers = (0,1)
+    # TODO: как X попадает в run_alpha() ??? какая-то хуйня
+    thread_numbers = (0, 1)
     with Pool(2) as pool:
         pool.map(run_alpha, thread_numbers)
         # pool.close()  # do we need close/join when using context?
@@ -322,10 +324,70 @@ def double_fun(X):
     # return (best_score_0, best_score_1)
 
 
+def ig_fold(thread_no: int, xx):
+    HL = np2full_seq(xx)
+    sequences = {
+        "H": HL[0],
+        "L": HL[1],
+    }
+
+    igfold = IgFoldRunner()
+    igfold.fold(
+        f"./data/th.{thread_no}/{ig_fold_pdb}",            # Output PDB file
+        sequences=sequences,    # Antibody sequences
+        do_refine=True,         # Refine the antibody structure with PyRosetta
+        do_renum=True,          # Send predicted structure to AbNum server for Chothia renumbering
+    )
+
+
+# input - list of 2 samples
+def double_fun_igfold(X):
+    global global_best_score
+    tic()
+
+    ##### these 2 calls must be run in parallel
+    thread_no = 0
+    ig_fold(thread_no, X[thread_no])
+    thread_no = 1
+    ig_fold(thread_no, X[thread_no])
+
+    # thread_numbers = (0, 1)
+    # with Pool(2) as pool:
+    #     pool.map(run_alpha, thread_numbers)
+
+    ##### the following must run in sequence!
+    # run docking/score for AF thread 0
+    thread_no = 0
+    output = subprocess.run(["./run_score.sh", f"/workdir/th.{thread_no}/{ig_fold_pdb}", "/workdir/" + spike],
+                                capture_output=True, check=True)  # these paths are inside the container!
+    best_score_0 = float(output.stdout.split()[-1])
+
+    # optionally copy the best pdb to save it
+    if best_score_0 < global_best_score:
+        shutil.copy(f"./data/th.{thread_no}/{ig_fold_pdb}", "./data/best.pdb")
+        global_best_score = best_score_0
+
+    # run docking/score for AF thread 1
+    thread_no = 1
+    output = subprocess.run(["./run_score.sh", f"/workdir/th.{thread_no}/{ig_fold_pdb}", "/workdir/" + spike],
+                                capture_output=True, check=True)  # these paths are inside the container!
+    best_score_1 = float(output.stdout.split()[-1])
+
+    # optionally copy the best pdb to save it
+    if best_score_1 < global_best_score:
+        shutil.copy(f"./data/th.{thread_no}/{ig_fold_pdb}", "./data/best.pdb")
+        global_best_score = best_score_1
+
+    print(f"Best 0,1: {best_score_0:.4f}, {best_score_1:.4f}, {toc()}")
+
+    return (best_score_0, best_score_1)
+
+
 if __name__ == '__main__':
     # test_full_seq()
     # exit()
     print(time.asctime())
+    init_pyrosetta()
 
     if not os.path.exists("data"):
         os.mkdir("data")
@@ -339,7 +401,8 @@ if __name__ == '__main__':
     # fun = get_fitness
     # get_fitness.n = 0
     # fun = fake_fitness
-    fun = double_fun
+    # fun = double_fun
+    fun = double_fun_igfold
 
     sigma0 = 0.2  # initial standard deviation to sample new solutions - should be ~ 1/4 of range
 
