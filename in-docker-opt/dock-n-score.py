@@ -145,6 +145,9 @@ def get_args():
     parser.add_argument("legand", type=str, help="""
         Spike PDB.
     """)
+    parser.add_argument("dla", type=float, help="""
+        DLA-Ranker thereshold.
+    """)
     return parser.parse_args()
 
 
@@ -168,7 +171,7 @@ if __name__ == '__main__':
     megadock(args.receptor, args.legand)
 
     print("Re-score with DLA")
-    output = subprocess.run(["python3","/opt/DLA-Ranker/dla_ranker.py"], capture_output=False, check=True)
+    output = subprocess.run(["python3","/opt/DLA-Ranker/dla_ranker.py", f"{args.dla}"], capture_output=False, check=True)
 
     print('Scoring with Vina:')
     min_score = vina_score()

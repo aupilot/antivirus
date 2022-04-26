@@ -20,6 +20,10 @@ from prody import parsePDB, writePDB
 spike = "7cr5_SPIKE.pdb"
 ig_fold_pdb = "ig_fold.pdb"
 
+###############################
+dla_threshold = 0.06
+#############################3#
+
 # use Fv only 7cr5
 # we can align with ANARCY - add spacers. Do we want it?
 # http://opig.stats.ox.ac.uk/webapps/newsabdab/sabpred/anarci/
@@ -346,19 +350,19 @@ def double_fun_igfold(X):
     tic()
 
     ##### these 2 calls must be run in parallel
-    thread_no = 0
-    ig_fold(thread_no, X[thread_no])
-    thread_no = 1
-    ig_fold(thread_no, X[thread_no])
+    # thread_no = 0
+    # ig_fold(thread_no, X[thread_no])
+    # thread_no = 1
+    # ig_fold(thread_no, X[thread_no])
 
-    # thread_numbers = (0, 1)
-    # with Pool(2) as pool:
-    #     pool.map(run_alpha, thread_numbers)
+    thread_numbers = (0, 1)
+    with Pool(2) as pool:
+        pool.starmap(ig_fold, zip(thread_numbers, X))
 
     ##### the following must run in sequence!
     # run docking/score for AF thread 0
     thread_no = 0
-    output = subprocess.run(["./run_score.sh", f"/workdir/th.{thread_no}/{ig_fold_pdb}", "/workdir/" + spike],
+    output = subprocess.run(["./run_score.sh", f"/workdir/th.{thread_no}/{ig_fold_pdb}", "/workdir/" + spike, f"{dla_threshold}"],
                                 capture_output=True, check=True)  # these paths are inside the container!
     best_score_0 = float(output.stdout.split()[-1])
 
@@ -369,7 +373,7 @@ def double_fun_igfold(X):
 
     # run docking/score for AF thread 1
     thread_no = 1
-    output = subprocess.run(["./run_score.sh", f"/workdir/th.{thread_no}/{ig_fold_pdb}", "/workdir/" + spike],
+    output = subprocess.run(["./run_score.sh", f"/workdir/th.{thread_no}/{ig_fold_pdb}", "/workdir/" + spike, f"{dla_threshold}"],
                                 capture_output=True, check=True)  # these paths are inside the container!
     best_score_1 = float(output.stdout.split()[-1])
 
@@ -456,7 +460,7 @@ if __name__ == '__main__':
     seq = np2full_seq(res)
 
     sequences = [SeqRecord(Seq(seq[0]), id='H', description="Optimised Ab H"), SeqRecord(Seq(seq[1]), id="L", description="Optimised Ab L")]
-    SeqIO.write(sequences, "results.fasta", "fasta")
+    SeqIO.write(sequences, "best.fasta", "fasta")
 
     print(seq)
     print(f"The best score: {es.result.fbest}, iterations: {es.result.iterations}")

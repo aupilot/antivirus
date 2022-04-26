@@ -2,12 +2,12 @@
 
 # run_score.sh /workdir/alphafold/fitness/ranked_0.pdb /workdir/6yla_SPIKE.pdb
 
-# test:  docker run -t --rm --gpus all -v $(pwd):/workdir --workdir /workdir 8kir8/molecule:0424.2 /usr/bin/python3 /opt/dock-n-score.py /workdir/th.0/renamed_0.pdb /workdir/7cr5_SPIKE.pdb
+# test:  docker run -it --gpus all --rm -v $(pwd):/workdir --workdir /workdir 8kir8/molecule:0426.2 /usr/bin/python3 /opt/dock-n-score.py /workdir/best.pdb /workdir/7cr5_SPIKE.pdb 0.06
 
 cd data/
 
 # docker login -u 8kir8
 # pwd: Supplier1
 #source /home/kir/Apps/alphafold/venv/bin/activate
-docker run -t --rm --gpus all -v $(pwd):/workdir --workdir /workdir 8kir8/molecule:0425.1 /usr/bin/python3 /opt/dock-n-score.py $1 $2
+docker run -t --rm --gpus all -v $(pwd):/workdir --workdir /workdir 8kir8/molecule:0426.2 /usr/bin/python3 /opt/dock-n-score.py $1 $2 $3
 #docker ps
