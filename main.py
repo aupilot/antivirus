@@ -382,7 +382,7 @@ def double_fun_igfold(X):
         shutil.copy(f"./data/th.{thread_no}/{ig_fold_pdb}", "./data/best.pdb")
         global_best_score = best_score_1
 
-    print(f"Best 0,1: {best_score_0:.4f}, {best_score_1:.4f}, {toc()}")
+    print(f"Scores: {best_score_0:.4f} {best_score_1:.4f}, The best: {global_best_score:.4f}, {toc()}")
 
     return (best_score_0, best_score_1)
 
@@ -414,8 +414,8 @@ if __name__ == '__main__':
     es = cma.CMAEvolutionStrategy(x0, sigma0,
                         inopts={
                             'ftarget': -3.0,
-                            'popsize': 10,
-                            'maxiter': 12,
+                            'popsize': 12,
+                            'maxiter': 25,
                             'bounds': [-0.1, 1.1],
                             'verb_time':0,
                             'verb_disp': 500,
@@ -438,20 +438,6 @@ if __name__ == '__main__':
         es.disp()
 
     es.result_pretty()
-
-    # simple optimisation loop
-    # res, es = cma.fmin2(fun, x0, sigma0, callback=check_stop,
-    #                options={
-    #                         'ftarget': -3.0,
-    #                         'popsize': 12,
-    #                         'maxiter': 10,
-    #                         'bounds': [-0.1, 1.1],
-    #                         'verb_time':0,
-    #                         'verb_disp': 500,
-    #                         'seed': 3},
-    #                restarts=0)
-
-
     # === es.result explanations: https://github.com/CMA-ES/pycma/blob/9b4eb5450c020ac99d637780a42c39788f1e1045/cma/evolution_strategy.py#L977
 
     # res = np2full_seq(es.result.xbest)
