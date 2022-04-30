@@ -14,7 +14,8 @@ import shutil
 import matplotlib
 matplotlib.use('TKAgg')
 from ttictoc import tic,toc
-from igfold import IgFoldRunner, init_pyrosetta
+# from igfold import IgFoldRunner, init_pyrosetta
+from igfold import IgFoldRunner
 from prody import parsePDB, writePDB
 
 spike = "7cr5_SPIKE.pdb"
@@ -31,7 +32,7 @@ dla_threshold = 0.06
 # initial_L = "QLVLTQSPSASASLGASVKLTC TLSSGHSNYAIA WHQQQPEKGPRYLM KVNSDGSHTKGD GIPDRFSGSSSGAERYLTISSLQSEDEADYYC QTWGTGIQV FGGGTKLTVL"
 
 # we split the sequence to cdr/framework regions. we won't  optimise on constant framework
-# TODO: automate cdr detection
+# TODO: automate cdr detection ??
 # https://github.com/mit-ll/Insilico_Ab_Variant_Generator/blob/main/scripts/parse_region.py
 framework_H1 = "QVQLVESGGGVVQPGRSLRLSC"   # 1-22
 cdr_H1 = "AASGFTFSSYIMH"
@@ -328,7 +329,8 @@ def double_fun(X):
     # return (best_score_0, best_score_1)
 
 
-def ig_fold(thread_no: int, xx):
+# with locally installed Rosetta refinements
+def ig_fold_rosetta(thread_no: int, xx):
     HL = np2full_seq(xx)
     sequences = {
         "H": HL[0],
@@ -344,20 +346,27 @@ def ig_fold(thread_no: int, xx):
     )
 
 
+# with conteinerised OpenMM refinement
+def ig_fold_openmm(thread_no: int, xx):
+    HL = np2full_seq(xx)
+    output = subprocess.run(["./run_igfold.sh", f"./data/th.{thread_no}/{ig_fold_pdb}", HL[0], HL[1]], capture_output=False, check=True)
+
+
 # input - list of 2 samples
 def double_fun_igfold(X):
     global global_best_score
     tic()
 
-    ##### these 2 calls must be run in parallel
+    ##### these 2 calls can be run in parallel (см ниже)
     # thread_no = 0
     # ig_fold(thread_no, X[thread_no])
     # thread_no = 1
     # ig_fold(thread_no, X[thread_no])
-
     thread_numbers = (0, 1)
+    # with Pool(2) as pool:
+    #     pool.starmap(ig_fold_rosetta, zip(thread_numbers, X))
     with Pool(2) as pool:
-        pool.starmap(ig_fold, zip(thread_numbers, X))
+        pool.starmap(ig_fold_openmm, zip(thread_numbers, X))
 
     ##### the following must run in sequence!
     # run docking/score for AF thread 0
@@ -391,7 +400,7 @@ if __name__ == '__main__':
     # test_full_seq()
     # exit()
     print(time.asctime())
-    init_pyrosetta()
+    # init_pyrosetta()
 
     if not os.path.exists("data"):
         os.mkdir("data")
@@ -414,8 +423,8 @@ if __name__ == '__main__':
     es = cma.CMAEvolutionStrategy(x0, sigma0,
                         inopts={
                             'ftarget': -3.0,
-                            'popsize': 12,
-                            'maxiter': 25,
+                            'popsize': 10,
+                            'maxiter': 12,
                             'bounds': [-0.1, 1.1],
                             'verb_time':0,
                             'verb_disp': 500,
@@ -452,5 +461,6 @@ if __name__ == '__main__':
     print(f"The best score: {es.result.fbest}, iterations: {es.result.iterations}")
     print(time.asctime())
 
-    # es.plot()
-    # matplotlib.pyplot.show(block=True)
+    es.plot()
+    matplotlib.pyplot.show(block=True)
+
