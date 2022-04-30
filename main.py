@@ -35,11 +35,11 @@ dla_threshold = 0.06
 # TODO: automate cdr detection ??
 # https://github.com/mit-ll/Insilico_Ab_Variant_Generator/blob/main/scripts/parse_region.py
 framework_H1 = "QVQLVESGGGVVQPGRSLRLSC"   # 1-22
-cdr_H1 = "AASGFTFSSYIMH"
-# cdr_H1 = "AASGFTF----SSYIMH"
+# cdr_H1 = "AASGFTFSSYIMH"
+cdr_H1 = "AASGFTF----SSYIMH"
 framework_H2 = "WVRQAPGKGLEWVA"
-cdr_H2 = "VISYDGSNEA"
-# cdr_H2 = "VISYD--GSNEA"
+# cdr_H2 = "VISYDGSNEA"
+cdr_H2 = "VISYD--GSNEA"
 framework_H3 = "YADSVKGRFTISRDNSKNTLYLQMSSLRAEDTGVYYC"
 cdr_H3 = "ARETGDYSSSWYDS"
 framework_H4 = "WGRGTLVTVSS"
@@ -48,11 +48,11 @@ framework_L1 = "QLVLTQSPSASASLGASVKLTC"
 cdr_L1 = "TLSSGHSNYAIA"
 # cdr_L1 = "TLSSGHS-----NYAIA"
 framework_L2 = "WHQQQPEKGPRYLM"
-cdr_L2 = "KVNSDGSHTKGD"
-# cdr_L2 = "KVNSD---GSHTKGD"
+# cdr_L2 = "KVNSDGSHTKGD"
+cdr_L2 = "KVNSD---GSHTKGD"
 framework_L3 = "GIPDRFSGSSSGAERYLTISSLQSEDEADYYC"
-cdr_L3 = "QTWGTGIQV"
-# cdr_L3 = "QTWGT----GIQV"
+# cdr_L3 = "QTWGTGIQV"
+cdr_L3 = "QTWGT----GIQV"
 framework_L4 = "FGGGTKLTVL"
 
 
@@ -322,7 +322,7 @@ def double_fun(X):
         shutil.copy(f"./data/th.{thread_no}/renamed_{best_score_idx}.pdb", "./data/best.pdb")
         global_best_score = best_score
 
-    print(f"Best 0,1: {best_score_0:.4f}, {best_score_1:.4f}, Average 0,1: {average_score_0:.4f} {average_score_1:.4f}, {toc()}")
+    print(f"Best 0,1: {best_score_0:.4f}, {best_score_1:.4f}, Average 0,1: {average_score_0:.4f} {average_score_1:.4f}, {toc():.2f}")
 
     # TODO: Find out what is better average or best
     return (average_score_0, average_score_1)
@@ -349,7 +349,7 @@ def ig_fold_rosetta(thread_no: int, xx):
 # with conteinerised OpenMM refinement
 def ig_fold_openmm(thread_no: int, xx):
     HL = np2full_seq(xx)
-    output = subprocess.run(["./run_igfold.sh", f"./data/th.{thread_no}/{ig_fold_pdb}", HL[0], HL[1]], capture_output=False, check=True)
+    output = subprocess.run(["./run_igfold.sh", f"./data/th.{thread_no}/{ig_fold_pdb}", HL[0], HL[1]], capture_output=True, check=True)
 
 
 # input - list of 2 samples
@@ -423,7 +423,7 @@ if __name__ == '__main__':
     es = cma.CMAEvolutionStrategy(x0, sigma0,
                         inopts={
                             'ftarget': -3.0,
-                            'popsize': 10,
+                            'popsize': 16,
                             'maxiter': 12,
                             'bounds': [-0.1, 1.1],
                             'verb_time':0,
