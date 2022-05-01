@@ -27,6 +27,7 @@ ig_fold_pdb = "ig_fold.pdb"
 # These are  set thru arguments now
 dla_threshold = 0.06
 mega_type = 1
+use_rosetta = 0
 #############################3#####
 
 movie_cnt = 0
@@ -364,9 +365,9 @@ def ig_fold_rosetta(thread_no: int, xx):
 # with conteinerised OpenMM refinement
 def ig_fold_openmm(thread_no: int, xx):
     HL = np2full_seq(xx)
-    time.sleep(float(thread_no) * 5.5)  # to prevent OOM on CUDA
+    # time.sleep(float(thread_no) * 5.5)  # to prevent OOM on CUDA
     output = subprocess.run(["./run_igfold.sh", f"./data/th.{thread_no}/{ig_fold_pdb}", HL[0], HL[1]],
-                            capture_output=True, check=True)
+                            capture_output=False, check=True)
 
 
 # input - list of 2 samples
@@ -375,16 +376,18 @@ def double_fun_igfold(X):
     global movie_cnt
     tic()
 
-    ##### these 2 calls can be run in parallel (см ниже)
-    # thread_no = 0
-    # ig_fold(thread_no, X[thread_no])
-    # thread_no = 1
-    # ig_fold(thread_no, X[thread_no])
+    ##### these 2 calls can be run in parallel?? breakes after ~3 epochs. OOM?
     thread_numbers = (0, 1)
-    # with Pool(2) as pool:
-    #     pool.starmap(ig_fold_rosetta, zip(thread_numbers, X))
-    with Pool() as pool:
-        pool.starmap(ig_fold_openmm, zip(thread_numbers, X))
+    if use_rosetta == 1:
+        with Pool(2) as pool:
+            pool.starmap(ig_fold_rosetta, zip(thread_numbers, X))
+    else:
+        with Pool(2) as pool:
+            pool.starmap(ig_fold_openmm, zip(thread_numbers, X))
+        # thread_no = 0
+        # ig_fold_openmm(thread_no, X[thread_no])
+        # thread_no = 1
+        # ig_fold_openmm(thread_no, X[thread_no])
 
     ##### the following must run in sequence!
     # run docking/score for AF thread 0
@@ -413,7 +416,7 @@ def double_fun_igfold(X):
         global_best_score = best_score_1
         movie_cnt += 1
 
-    print(f"Scores: {best_score_0:.4f} {best_score_1:.4f}, The best: {global_best_score:.4f}, {toc()}")
+    print(f"Scores: {best_score_0:.4f} {best_score_1:.4f}, The best: {global_best_score:.4f}, {toc():.2f}")
 
     return (best_score_0, best_score_1)
 
@@ -430,7 +433,9 @@ def get_args():
     parser.add_argument("mega", type=int, default=0, help="""
         Use kir optimised Megadock (1) or not (0).
     """)
-
+    parser.add_argument("ros", type=int, default=0, help="""
+        Use Rosetta for IgFold refinement (1) or OpenMM (0).
+    """)
     return parser.parse_args()
 
 
@@ -438,6 +443,7 @@ if __name__ == '__main__':
     args = get_args()
     dla_threshold = args.dla
     mega_type = args.mega
+    use_rosetta = args.ros
 
     print(time.asctime())
 
