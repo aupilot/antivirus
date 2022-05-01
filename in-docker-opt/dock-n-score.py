@@ -21,7 +21,7 @@ receptor_chains = {'H', 'L', 'M', 'N'}
 # all decoys with the score lower than this will not be scored
 dla_ranker_threshold = 0.05
 
-def megadock(receptor=None, legand=None):
+def megadock(receptor=None, legand=None, mega_type=0):
     # read the parameters for blocking H
     blk_file = open("/workdir/block-H.txt")
     blk = blk_file.readline().rstrip('\n')
@@ -54,8 +54,17 @@ def megadock(receptor=None, legand=None):
 
     blk_file.close()
 
-    output = subprocess.run(["/opt/megadock-4.1.1/megadock-gpu","-R", tmp_name_L, "-L", legand, "-r 3600", "-v 1.0", "-o", "/opt/var/dock.out" ], capture_output=False, check=True)
-    output = subprocess.run(["/opt/megadock-4.1.1/mega-post.sh", receptor, legand], capture_output=False, check=True)
+    if mega_type == 0:
+        # using the original MEGADOCK
+        output = subprocess.run(["/opt/megadock-4.1.1/megadock-gpu","-R", tmp_name_L, "-L", legand, "-r 3600", "-v 1.0", "-o", "/opt/var/dock.out" ], capture_output=False, check=True)
+        output = subprocess.run(["/opt/megadock-4.1.1/mega-post.sh", receptor, legand], capture_output=False, check=True)
+    elif mega_type == 1:
+        # use Kir optimised MEGADOCK
+        output = subprocess.run(["/opt/megadock-kir/megadock-gpu","-R", tmp_name_L, "-L", legand, "-r 2600", "-v 1.0", "-o", "/opt/var/dock.out" ], capture_output=False, check=True)
+        output = subprocess.run(["/opt/megadock-kir/mega-post.sh", receptor, legand], capture_output=False, check=True)
+
+    else:
+        raise Exception("Unknown megadock type requested")
 
     os.remove(tmp_name_L)
     os.remove(tmp_name_H)
@@ -148,6 +157,10 @@ def get_args():
     parser.add_argument("dla", type=float, help="""
         DLA-Ranker thereshold.
     """)
+    parser.add_argument("mega", type=int, default=0, help="""
+        Use kir optimised Megadock (1) or not (0).
+    """)
+
     return parser.parse_args()
 
 
@@ -168,7 +181,7 @@ if __name__ == '__main__':
     print('Docking:')
     print(args.receptor)
     print(args.legand)
-    megadock(args.receptor, args.legand)
+    megadock(args.receptor, args.legand, args.mega)
 
     print("Re-score with DLA")
     output = subprocess.run(["python3","/opt/DLA-Ranker/dla_ranker.py", f"{args.dla}"], capture_output=False, check=True)
