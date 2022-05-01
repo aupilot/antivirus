@@ -254,6 +254,7 @@ def dock_score(thread_no: int):
 
 
 # input - list of 2 samples
+# folding with alphafold
 def double_fun(X):
     # return (random.random(), random.random())     # test
     global global_best_score
@@ -416,17 +417,18 @@ if __name__ == '__main__':
     # fun = fake_fitness
     # fun = double_fun
     fun = double_fun_igfold
-
-    sigma0 = 0.2  # initial standard deviation to sample new solutions - should be ~ 1/4 of range
+    plot_avg = []
+    plot_min = []
+    sigma0 = 0.15  # initial standard deviation to sample new solutions - should be ~ 1/4 of range
 
     # # cfun = cma.ConstrainedFitnessAL(fun, constraints)  # unconstrained function with adaptive Lagrange multipliers
     es = cma.CMAEvolutionStrategy(x0, sigma0,
                         inopts={
                             'ftarget': -3.0,
-                            'popsize': 16,
-                            'maxiter': 12,
+                            'popsize': 18,
+                            'maxiter': 10,
                             'bounds': [-0.1, 1.1],
-                            'verb_time':0,
+                            'verb_time': 0,
                             'verb_disp': 500,
                             'seed': 3},)
 
@@ -439,6 +441,9 @@ if __name__ == '__main__':
             v2 = fun(x2)
             V.append(v2[0])
             V.append(v2[1])
+
+        plot_avg.append(np.array(V).mean())
+        plot_min.append(np.array(V).min())
 
         es.tell(X, V)
         # es.tell(X, [fun(x) for x in X])
@@ -460,6 +465,10 @@ if __name__ == '__main__':
     print(seq)
     print(f"The best score: {es.result.fbest}, iterations: {es.result.iterations}")
     print(time.asctime())
+
+    plot = np.array([plot_avg, plot_min]).T
+    matplotlib.pyplot.plot(plot)
+    matplotlib.pyplot.show(block=True)
 
     es.plot()
     matplotlib.pyplot.show(block=True)
