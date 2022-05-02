@@ -28,6 +28,7 @@ ig_fold_pdb = "ig_fold.pdb"
 dla_threshold = 0.06
 mega_type = 1
 use_rosetta = 0
+renumber = 0
 #############################3#####
 
 movie_cnt = 0
@@ -345,20 +346,20 @@ def double_fun(X):
 
 
 # with locally installed Rosetta refinements
-def ig_fold_rosetta(thread_no: int, xx):
-    HL = np2full_seq(xx)
-    sequences = {
-        "H": HL[0],
-        "L": HL[1],
-    }
-
-    igfold = IgFoldRunner()
-    igfold.fold(
-        f"./data/th.{thread_no}/{ig_fold_pdb}",  # Output PDB file
-        sequences=sequences,  # Antibody sequences
-        do_refine=True,  # Refine the antibody structure with PyRosetta
-        do_renum=True,  # Send predicted structure to AbNum server for Chothia renumbering
-    )
+# def ig_fold_rosetta(thread_no: int, xx):
+#     HL = np2full_seq(xx)
+#     sequences = {
+#         "H": HL[0],
+#         "L": HL[1],
+#     }
+#
+#     igfold = IgFoldRunner()
+#     igfold.fold(
+#         f"./data/th.{thread_no}/{ig_fold_pdb}",  # Output PDB file
+#         sequences=sequences,  # Antibody sequences
+#         do_refine=True,  # Refine the antibody structure with PyRosetta
+#         do_renum=True,  # Send predicted structure to AbNum server for Chothia renumbering
+#     )
 
 
 # with conteinerised OpenMM refinement
@@ -366,7 +367,7 @@ def ig_fold_docker(thread_no: int, xx):
     HL = np2full_seq(xx)
     # time.sleep(float(thread_no) * 5.5)  # to prevent OOM on CUDA -- does not need
     # TODO: set capture_output = True to get rid of extra output when fixed
-    output = subprocess.run(["./run_igfold.sh", f"./data/th.{thread_no}/{ig_fold_pdb}", HL[0], HL[1], f"--rosetta={use_rosetta}", "--renum=0"],
+    output = subprocess.run(["./run_igfold.sh", f"./data/th.{thread_no}/{ig_fold_pdb}", HL[0], HL[1], f"--rosetta={use_rosetta}", f"--renum={renumber}"],
                             capture_output=False, check=True)
 
 
@@ -436,6 +437,9 @@ def get_args():
     parser.add_argument("--rosetta", type=int, default=0, help="""
         Use Rosetta for IgFold refinement (1) or OpenMM (0).
     """)
+    parser.add_argument("--renum", type=int, default=0, help="""
+        Send predicted structure to AbNum server for Chothia renumbering (1)
+    """)
     return parser.parse_args()
 
 
@@ -444,6 +448,7 @@ if __name__ == '__main__':
     dla_threshold = args.dla
     mega_type = args.mega
     use_rosetta = args.rosetta
+    renumber = args.renum
 
     print(time.asctime())
 
