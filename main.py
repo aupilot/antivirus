@@ -17,14 +17,14 @@ import matplotlib
 matplotlib.use('TKAgg')
 from ttictoc import tic, toc
 # from igfold import IgFoldRunner, init_pyrosetta
-from igfold import IgFoldRunner
+# from igfold import IgFoldRunner
 from prody import parsePDB, writePDB
 
 spike = "7cr5_SPIKE.pdb"
 ig_fold_pdb = "ig_fold.pdb"
 
 ###################################
-# These are  set thru arguments now
+# These are set thru arguments now
 dla_threshold = 0.06
 mega_type = 1
 use_rosetta = 0
@@ -337,8 +337,7 @@ def double_fun(X):
         shutil.copy(f"./data/th.{thread_no}/renamed_{best_score_idx}.pdb", "./data/best.pdb")
         global_best_score = best_score
 
-    print(
-        f"Best 0,1: {best_score_0:.4f}, {best_score_1:.4f}, Average 0,1: {average_score_0:.4f} {average_score_1:.4f}, {toc():.2f}")
+    print(f"Best 0,1: {best_score_0:.4f}, {best_score_1:.4f}, Average 0,1: {average_score_0:.4f} {average_score_1:.4f}, {toc():.2f}")
 
     # TODO: Find out what is better average or best
     return (average_score_0, average_score_1)
@@ -363,10 +362,11 @@ def ig_fold_rosetta(thread_no: int, xx):
 
 
 # with conteinerised OpenMM refinement
-def ig_fold_openmm(thread_no: int, xx):
+def ig_fold_docker(thread_no: int, xx):
     HL = np2full_seq(xx)
-    # time.sleep(float(thread_no) * 5.5)  # to prevent OOM on CUDA
-    output = subprocess.run(["./run_igfold.sh", f"./data/th.{thread_no}/{ig_fold_pdb}", HL[0], HL[1]],
+    # time.sleep(float(thread_no) * 5.5)  # to prevent OOM on CUDA -- does not need
+    # TODO: set capture_output = True to get rid of extra output when fixed
+    output = subprocess.run(["./run_igfold.sh", f"./data/th.{thread_no}/{ig_fold_pdb}", HL[0], HL[1], f"--rosetta={use_rosetta}", "--renum=0"],
                             capture_output=False, check=True)
 
 
@@ -378,16 +378,16 @@ def double_fun_igfold(X):
 
     ##### these 2 calls can be run in parallel?? breakes after ~3 epochs. OOM?
     thread_numbers = (0, 1)
-    if use_rosetta == 1:
-        with Pool(2) as pool:
-            pool.starmap(ig_fold_rosetta, zip(thread_numbers, X))
-    else:
-        with Pool(2) as pool:
-            pool.starmap(ig_fold_openmm, zip(thread_numbers, X))
-        # thread_no = 0
-        # ig_fold_openmm(thread_no, X[thread_no])
-        # thread_no = 1
-        # ig_fold_openmm(thread_no, X[thread_no])
+    # if use_rosetta == 1:
+    #     with Pool(2) as pool:
+    #         pool.starmap(ig_fold_rosetta, zip(thread_numbers, X))
+    # else:
+    with Pool(2) as pool:
+        pool.starmap(ig_fold_docker, zip(thread_numbers, X))
+    # thread_no = 0
+    # ig_fold_openmm(thread_no, X[thread_no])
+    # thread_no = 1
+    # ig_fold_openmm(thread_no, X[thread_no])
 
     ##### the following must run in sequence!
     # run docking/score for AF thread 0
@@ -430,10 +430,10 @@ def get_args():
     parser.add_argument("dla", type=float, default=0.06, help="""
         DLA-Ranker thereshold.
     """)
-    parser.add_argument("mega", type=int, default=0, help="""
+    parser.add_argument("--mega", type=int, default=0, help="""
         Use kir optimised Megadock (1) or not (0).
     """)
-    parser.add_argument("ros", type=int, default=0, help="""
+    parser.add_argument("--rosetta", type=int, default=0, help="""
         Use Rosetta for IgFold refinement (1) or OpenMM (0).
     """)
     return parser.parse_args()
@@ -443,11 +443,13 @@ if __name__ == '__main__':
     args = get_args()
     dla_threshold = args.dla
     mega_type = args.mega
-    use_rosetta = args.ros
+    use_rosetta = args.rosetta
 
     print(time.asctime())
 
-    # init_pyrosetta()  # if we use rosetta refinement for IgFold
+    # if use_rosetta == 1:
+    #     from igfold import IgFoldRunner, init_pyrosetta
+    #     init_pyrosetta()  # if we use rosetta refinement for IgFold locally
 
     if not os.path.exists("data"):
         os.mkdir("data")
