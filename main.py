@@ -416,7 +416,7 @@ def double_fun_igfold(X):
         global_best_score = best_score_1
         movie_cnt += 1
 
-    print(f"Scores: {best_score_0:.4f} {best_score_1:.4f}, The best: {global_best_score:.4f}, {toc():.2f}")
+    print(f"Scores: {best_score_0:.4f} {best_score_1:.4f}, The best: {global_best_score:.4f}, Time: {toc():.1f}")
 
     return (best_score_0, best_score_1)
 
