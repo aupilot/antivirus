@@ -362,13 +362,23 @@ def double_fun(X):
 #     )
 
 
-# with conteinerised OpenMM refinement
+# with conteinerised Rosetta or OpenMM refinement running in docker container
 def ig_fold_docker(thread_no: int, xx):
     HL = np2full_seq(xx)
     # time.sleep(float(thread_no) * 5.5)  # to prevent OOM on CUDA -- does not need
     # TODO: set capture_output = True to get rid of extra output when fixed
-    output = subprocess.run(["./run_igfold.sh", f"./data/th.{thread_no}/{ig_fold_pdb}", HL[0], HL[1], f"--rosetta={use_rosetta}", f"--renum={renumber}"],
-                            capture_output=False, check=True)
+    try:
+        output = subprocess.run(
+            ["./run_igfold.sh", f"./data/th.{thread_no}/{ig_fold_pdb}", HL[0], HL[1], f"--rosetta={use_rosetta}",
+             f"--renum={renumber}"],
+            capture_output=True, check=True)
+    except:
+        # we run it again in the case of failure. Specifically designed to workaround OpenMM NaN exception for fuck knows reason
+        print("Exception occured in run_igfold.sh. Probably OpenMM NaN issue. Trying to re-run again")
+        output = subprocess.run(
+            ["./run_igfold.sh", f"./data/th.{thread_no}/{ig_fold_pdb}", HL[0], HL[1], f"--rosetta={use_rosetta}",
+             f"--renum={renumber}"],
+            capture_output=True, check=True)
 
 
 # input - list of 2 samples
@@ -377,12 +387,8 @@ def double_fun_igfold(X):
     global movie_cnt
     tic()
 
-    ##### these 2 calls can be run in parallel?? breakes after ~3 epochs. OOM?
+    ##### these 2 calls can be run in parallel??
     thread_numbers = (0, 1)
-    # if use_rosetta == 1:
-    #     with Pool(2) as pool:
-    #         pool.starmap(ig_fold_rosetta, zip(thread_numbers, X))
-    # else:
     with Pool(2) as pool:
         pool.starmap(ig_fold_docker, zip(thread_numbers, X))
     # thread_no = 0
@@ -452,10 +458,6 @@ if __name__ == '__main__':
 
     print(time.asctime())
 
-    # if use_rosetta == 1:
-    #     from igfold import IgFoldRunner, init_pyrosetta
-    #     init_pyrosetta()  # if we use rosetta refinement for IgFold locally
-
     if not os.path.exists("data"):
         os.mkdir("data")
 
@@ -479,7 +481,7 @@ if __name__ == '__main__':
                                   inopts={
                                       'ftarget': -3.0,
                                       'popsize': 18,
-                                      'maxiter': 10,
+                                      'maxiter': 26,
                                       'bounds': [-0.1, 1.1],
                                       'verb_time': 0,
                                       'verb_disp': 500,
