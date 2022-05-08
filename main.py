@@ -20,28 +20,34 @@ from ttictoc import tic, toc
 # from igfold import IgFoldRunner
 from prody import parsePDB, writePDB
 
-spike = "7cr5_SPIKE.pdb"
 ig_fold_pdb = "ig_fold.pdb"
 
 ###################################
 # These are set thru arguments now
 dla_threshold = 0.06
-mega_type = 1
+mega_type = 1           # 0 - original, 1 - kir's, ...
 use_rosetta = 0
 renumber = 0
 #############################3#####
 
 movie_cnt = 0
 
-# use Fv only 7cr5
+
 # we can align with ANARCY - add spacers. Do we want it?
-# http://opig.stats.ox.ac.uk/webapps/newsabdab/sabpred/anarci/
-# initial_H = "QVQLVESGGGVVQPGRSLRLSC AASGFTFSSYIMH WVRQAPGKGLEWVA VISYDGSNEA YADSVKGRFTISRDNSKNTLYLQMSSLRAEDTGVYYC ARETGDYSSSWYDS WGRGTLVTVSS"
-# initial_L = "QLVLTQSPSASASLGASVKLTC TLSSGHSNYAIA WHQQQPEKGPRYLM KVNSDGSHTKGD GIPDRFSGSSSGAERYLTISSLQSEDEADYYC QTWGTGIQV FGGGTKLTVL"
 
 # we split the sequence to cdr/framework regions. we won't  optimise on constant framework
 # TODO: automate cdr detection ??
+# all give different CDR breakdown!
+# http://dunbrack2.fccc.edu/PyIgClassify/User/UserPdb.aspx
+# http://cao.labshare.cn/AbRSA/download.php
 # https://github.com/mit-ll/Insilico_Ab_Variant_Generator/blob/main/scripts/parse_region.py
+# inserts:
+# http://opig.stats.ox.ac.uk/webapps/newsabdab/sabpred/anarci/
+
+
+spike = "7cr5_SPIKE.pdb"
+
+# use Fv only 7cr5
 framework_H1 = "QVQLVESGGGVVQPGRSLRLSC"  # 1-22
 # cdr_H1 = "AASGFTFSSYIMH"
 cdr_H1 = "AASGFTF----SSYIMH"
@@ -62,6 +68,30 @@ framework_L3 = "GIPDRFSGSSSGAERYLTISSLQSEDEADYYC"
 # cdr_L3 = "QTWGTGIQV"
 cdr_L3 = "QTWGT----GIQV"
 framework_L4 = "FGGGTKLTVL"
+
+
+# 7lm9
+spike = "7cr5_SPIKE.pdb"
+
+# EVQLVQSGAEVKKPGESLKISC QGSGYSFTSYWIG WVRQMPGKGLEWMG IIYPGESDTR YSSSFQGHVTISADKSISTAYLQWSSLKASDTAMYYC ARIRGVYSSGWIGGDY WGQGTLVTVSS
+# DIQMTQSPSSLSASVGDRVTITC RASQSISSYLN WYQQKPGKAPKLLI YAASSLQS GVPSRFSGSGSGTDFTLTISSLQPEDFATYYC QQSYSTPRQWT FGQGTKVEIK
+# framework_H1 = "EVQLVQSGAEVKKPGESLKISC"  #
+# cdr_H1 = "QGSGYSF----TSYWIG"
+# framework_H2 = "WVRQMPGKGLEWMG"
+# cdr_H2 = "IIYPG--ESDTR"
+# framework_H3 = "YSSSFQGHVTISADKSISTAYLQWSSLKASDTAMYYC"
+# cdr_H3 = "ARIRGVYSSGWIGGDY"
+# framework_H4 = "WGQGTLVTVSS"
+#
+# framework_L1 = "DIQMTQSPSSLSASVGDRVTITC"
+# cdr_L1 = "RASQSI------SSYLN"
+# framework_L2 = "WYQQKPGKAPKLLI"
+# cdr_L2 = "YAA-------SSLQS"
+# framework_L3 = "GVPSRFSGSGSGTDFTLTISSLQPEDFATYYC"
+# cdr_L3 = "QQSYST--PRQWT"
+# framework_L4 = "FGQGTKVEIK"
+
+
 
 residue_letters = [
     "-",  # spacer
@@ -91,8 +121,6 @@ residue_letters = [
 # as long as the length of the Ab varies, we need to compare the new sequence every time with the framework pieces to block
 block = ["LVESGGGVVQPGRSLR", "RQAPGKGLEW", "LQMSSLRAEDTGVYYC", "GTLVTV",
          "LTQSPSASASLG", "QQPEKGPR", "SSSGAERYLT", "FGGGTK"]
-# block= ["LVESGGGVVQPGRSLRL", "WVRQAPGKGLEWV", "YADSVKGR", "GTLVTVSS",
-#         framework_L1, framework_L2, framework_L3, framework_L4]
 
 # TODO: learn better embedding with lower dimensions and smooth space. Perhaps 2-3 layer net?
 residue_embedding = np.eye(21, 21, dtype=int)
@@ -361,7 +389,6 @@ def double_fun(X):
 #         do_renum=True,  # Send predicted structure to AbNum server for Chothia renumbering
 #     )
 
-
 # with conteinerised Rosetta or OpenMM refinement running in docker container
 def ig_fold_docker(thread_no: int, xx):
     HL = np2full_seq(xx)
@@ -481,7 +508,7 @@ if __name__ == '__main__':
                                   inopts={
                                       'ftarget': -3.0,
                                       'popsize': 18,
-                                      'maxiter': 26,
+                                      'maxiter': 48,
                                       'bounds': [-0.1, 1.1],
                                       'verb_time': 0,
                                       'verb_disp': 500,

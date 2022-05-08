@@ -1,0 +1,53 @@
+import subprocess
+import time
+from multiprocessing import Pool
+from prody import parsePDB, writePDB
+from ttictoc import tic, toc
+
+
+ig_fold_pdb = "ig_fold.pdb"
+
+
+# with conteinerised Rosetta or OpenMM refinement running in docker container
+def ig_fold_sequence(thread_no: int, sequence, use_rosetta=0, do_renum=0):
+    # TODO: set capture_output = True to get rid of extra output when fixed
+    output = subprocess.run(
+        ["./run_igfold.sh", f"./data/th.{thread_no}/{ig_fold_pdb}", sequence["H"], sequence["L"], f"--rosetta={use_rosetta}",
+         f"--renum={do_renum}"],
+        capture_output=True, check=True)
+
+
+# input: list of 2 sequences, each seq is a dict with "H" and "L"
+def fold_n_score2(sequences, spike, mega_type=0, dla_threshold=0.06):
+    tic()
+
+    ##### these 2 calls can be run in parallel
+    thread_numbers = (0, 1)
+    with Pool(2) as pool:
+        pool.starmap(ig_fold_sequence, zip(thread_numbers, sequences))
+    # thread_no = 0
+    # ig_fold_sequence(thread_no, sequences[thread_no])
+    # thread_no = 1
+    # ig_fold_sequence(thread_no, sequences[thread_no])
+
+    ##### the following must run sequentially!
+    # run docking/score
+    scores = []
+    for thread_no in range(2):
+        output = subprocess.run(
+            ["./run_score.sh", f"/workdir/th.{thread_no}/{ig_fold_pdb}", "/workdir/" + spike, f"{dla_threshold}",
+             f"{mega_type}"],
+            capture_output=True, check=True)  # these paths are inside the container!
+        scores.append(float(output.stdout.split()[-1]))
+
+    # run docking/score for thread 1
+    # thread_no = 1
+    # output = subprocess.run(
+    #     ["./run_score.sh", f"/workdir/th.{thread_no}/{ig_fold_pdb}", "/workdir/" + spike, f"{dla_threshold}",
+    #      f"{mega_type}"],
+    #     capture_output=True, check=True)  # these paths are inside the container!
+    # best_score_1 = float(output.stdout.split()[-1])
+
+    print(f"Scores:"+ str(scores) + f" Time: {toc():.1f}")
+
+    return scores
