@@ -18,13 +18,15 @@ def ig_fold_sequence(thread_no: int, sequence, use_rosetta=0, do_renum=0):
 
 
 # input: list of 2 sequences, each seq is a dict with "H" and "L"
-def fold_n_score2(sequences, spike, mega_type=0, dla_threshold=0.06):
+def fold_n_score2(sequences, spike, mega_type=0, dla_threshold=0.06, rosetta=0, renum=0):
     tic()
 
     ##### these 2 calls can be run in parallel
     thread_numbers = (0, 1)
+    rosetta_n = [rosetta]*2
+    renum_n = [renum]*2
     with Pool(2) as pool:
-        pool.starmap(ig_fold_sequence, zip(thread_numbers, sequences))
+        pool.starmap(ig_fold_sequence, zip(thread_numbers, sequences, rosetta_n, renum_n))
     # thread_no = 0
     # ig_fold_sequence(thread_no, sequences[thread_no])
     # thread_no = 1

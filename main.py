@@ -13,6 +13,8 @@ from Bio.SeqRecord import SeqRecord
 from scipy.special import softmax
 import shutil
 import matplotlib
+from Bio.PDB import *
+from numpy.linalg import norm
 
 matplotlib.use('TKAgg')
 from ttictoc import tic, toc
@@ -44,6 +46,10 @@ movie_cnt = 0
 # inserts:
 # http://opig.stats.ox.ac.uk/webapps/newsabdab/sabpred/anarci/
 
+
+# the max distance between the atom and the line from H-end and L-end is about 38Å
+# so, we will block the atoms that are closer than about 1/3 of that
+block_distance = 38.0 / 3   # Å
 
 spike = "7cr5_SPIKE.pdb"
 
@@ -119,8 +125,8 @@ residue_letters = [
 
 # list of pieces to block when docking - four from H and four from L
 # as long as the length of the Ab varies, we need to compare the new sequence every time with the framework pieces to block
-block = ["LVESGGGVVQPGRSLR", "RQAPGKGLEW", "LQMSSLRAEDTGVYYC", "GTLVTV",
-         "LTQSPSASASLG", "QQPEKGPR", "SSSGAERYLT", "FGGGTK"]
+# block = ["LVESGGGVVQPGRSLR", "RQAPGKGLEW", "LQMSSLRAEDTGVYYC", "GTLVTV",
+#          "LTQSPSASASLG", "QQPEKGPR", "SSSGAERYLT", "FGGGTK"]
 
 # TODO: learn better embedding with lower dimensions and smooth space. Perhaps 2-3 layer net?
 residue_embedding = np.eye(21, 21, dtype=int)
@@ -191,12 +197,6 @@ def test_full_seq():
     print(np2full_seq(seq2np(cdr_H1 + cdr_H2 + cdr_H3 + cdr_L1 + cdr_L2 + cdr_L3)))
 
 
-# def test_initial():
-#     x0 = hl2np(initial_H, initial_L)
-#     H,L = np2hl(x0)
-#     print(H)
-#     print(L)
-
 def check_stop(a):
     # how do we stop the optimiser correctly??
     if a.countiter > 10000:
@@ -239,24 +239,74 @@ def get_fitness(x):
 
 # create a file with receptor residues to block (for MEGADOCK)
 # we assume that the block seqs always exist!
-def save_blocking_positions(sequence_H, sequence_L):
-    ff = open("data/block-H.txt", "wt")
-    # ff.write("H ")
-    for iii in range(4):
-        ptr_from = sequence_H.find(block[iii])
-        if ptr_from < 0: raise Exception('Blocking sequence problem! (H)')
-        ptr_to = ptr_from + len(block[iii])
-        ff.write(f"{ptr_from + 1}-{ptr_to},")
-    ff.close()
+# def save_blocking_positions(sequence_H, sequence_L):
+#     ff = open("data/block-H.txt", "wt")
+#     # ff.write("H ")
+#     for iii in range(4):
+#         ptr_from = sequence_H.find(block[iii])
+#         if ptr_from < 0: raise Exception('Blocking sequence problem! (H)')
+#         ptr_to = ptr_from + len(block[iii])
+#         ff.write(f"{ptr_from + 1}-{ptr_to},")
+#     ff.close()
+#
+#     ff = open("data/block-L.txt", "wt")
+#     # ff.write("L ")
+#     for iii in range(4):
+#         ptr_from = sequence_L.find(block[iii + 4])
+#         if ptr_from < 0: raise Exception('Blocking sequence problem! (L)')
+#         ptr_to = ptr_from + len(block[iii + 4])
+#         ff.write(f"{ptr_from + 1}-{ptr_to},")
+#     ff.close()
 
-    ff = open("data/block-L.txt", "wt")
-    # ff.write("L ")
-    for iii in range(4):
-        ptr_from = sequence_L.find(block[iii + 4])
-        if ptr_from < 0: raise Exception('Blocking sequence problem! (L)')
-        ptr_to = ptr_from + len(block[iii + 4])
-        ff.write(f"{ptr_from + 1}-{ptr_to},")
-    ff.close()
+
+# https://stackoverflow.com/questions/39840030/distance-between-point-and-a-line-from-two-points
+def t(p, q, r):
+    x = p-q
+    return np.dot(r-q, x)/np.dot(x, x)
+
+def d(p, q, r):
+    return np.linalg.norm(t(p, q, r)*(p-q)+q-r)
+
+# Automatically selects blocked residues based on distance from the line between end of H to the end of L.
+# This requires pdb file as input.
+# It saves results only to one location. Thus, if we want split between threads, it must be updated accordingly
+def save_blocking_positions_pdb(pdb_file):
+    ff_h = open("data/block-H.txt", "wt")
+    ff_l = open("data/block-L.txt", "wt")
+
+    last_coords = {}
+    p = PDBParser()
+    structure = p.get_structure('Ab', pdb_file)
+    # bld = open('test.bld', 'wt')    # arrows file to plot in ChimeraX to test the selection
+
+    # we're expecting one model with 2 chains H and L
+    if len(structure.child_list) != 1:
+        raise Exception('The PDB must have only one model with Ab')
+    for model in structure:
+        if len(model.child_list) != 2:
+            raise Exception('The Ab Model must have two chains')
+        for chain in model:
+            # find the last element.
+            *_, last = chain
+            last_coords[chain.id] = last['CA'].get_coord()
+        midpoint = (last_coords['H'] + last_coords['L']) / 2.
+
+        for chain in model:
+            for residue in chain:
+                atom_coord = residue['CA'].get_coord()
+                # distance between the line connecting end residues and the current atom
+                distance = d(last_coords['H'], last_coords['L'], atom_coord)
+                if distance < block_distance:
+                    # print(f'block {chain.id} {residue.id[1]} {distance}')
+                    # we create a bld file to indicate the blocked atoms in ChimeraX image
+                    # bld.write(f'.arrow {midpoint[0]} {midpoint[1]} {midpoint[2]} {atom_coord[0]} {atom_coord[1]} {atom_coord[2]}\n')
+                    if chain.id == 'H':
+                        ff_h.write(f"{residue.id[1]},")
+                    elif chain.id == 'L':
+                        ff_l.write(f"{residue.id[1]},")
+    # bld.close()
+    ff_h.close()
+    ff_l.close()
 
 
 def fake_fitness(arg):
@@ -392,8 +442,7 @@ def double_fun(X):
 # with conteinerised Rosetta or OpenMM refinement running in docker container
 def ig_fold_docker(thread_no: int, xx):
     HL = np2full_seq(xx)
-    # time.sleep(float(thread_no) * 5.5)  # to prevent OOM on CUDA -- does not need
-    # TODO: set capture_output = True to get rid of extra output when fixed
+
     try:
         output = subprocess.run(
             ["./run_igfold.sh", f"./data/th.{thread_no}/{ig_fold_pdb}", HL[0], HL[1], f"--rosetta={use_rosetta}",
@@ -406,6 +455,11 @@ def ig_fold_docker(thread_no: int, xx):
             ["./run_igfold.sh", f"./data/th.{thread_no}/{ig_fold_pdb}", HL[0], HL[1], f"--rosetta={use_rosetta}",
              f"--renum={renumber}"],
             capture_output=True, check=True)
+
+    # once folded, we need to select the residues to block. They will be the same most the time for all threads,
+    # so we don't bother to run it multiple times. Only in thread 0
+    if thread_no == 0:
+        save_blocking_positions_pdb(f"./data/th.{thread_no}/{ig_fold_pdb}")
 
 
 # input - list of 2 samples
@@ -492,7 +546,7 @@ if __name__ == '__main__':
 
     # before docking we create 2 files with residues to block on receptor side. These should be unchangeable residues
     HL = np2full_seq(x0)
-    save_blocking_positions(HL[0], HL[1])
+    # save_blocking_positions(HL[0], HL[1])
 
     # fun = get_fitness
     # get_fitness.n = 0

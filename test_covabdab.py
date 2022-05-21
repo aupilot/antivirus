@@ -1,7 +1,13 @@
+import random
 import time
 import pandas as pd
-
 from helper import fold_n_score2
+
+
+"""
+get bind/no_bind from covabdab and compare to our pipeline results (fold/bind/score)
+"""
+
 
 CovAbDab_db_file = "/media/kir/Work/Datasets/CoV-AbDab/CoV-AbDab_200422.csv"
 
@@ -12,14 +18,18 @@ binds_to_exclude = "weak"
 # epitopes = ["S; RBD", "S; S2"]
 epitopes = ["S; RBD"]
 
-samples = 20  # if None use the min of pos/neg for both pos and neg. Otherwise use this number for both
+samples = None  # if None use the min of pos/neg for both pos and neg. Otherwise use this number for both
 
-spike = "7k9i_spike.pdb"            # wild type SARS-CoV2 spike protein S1. Don't use Amber numbering!
-mega_type = 1                       # 0 - orig, 1 - kir
-dla_threshold = 0.05                # drop the dockings with lower score as non-natural (from DLA-Ranker perspective)
+# spike = "7k9i_spike.pdb"            # wild type SARS-CoV2 spike protein S1. Don't use Amber numbering!
+spike = "7e3c_spike.pdb"            # wild type SARS-CoV2 spike protein S1. Don't use Amber numbering!
+mega_type = 0                       # 0 - orig, 1 - kir
+dla_threshold = 0.06                # drop the dockings with lower score as non-natural (from DLA-Ranker perspective)
+rosetta = 0                 # don't use rosetta. OpenMM is way better
+renum = 1
 
 result_file = "results.csv"
 
+random.seed(666)
 
 if __name__ == '__main__':
     print(time.asctime())
@@ -79,7 +89,7 @@ if __name__ == '__main__':
         neg_seq['H'] = s_neg['VH or VHH']
         neg_seq['L'] = s_neg['VL']
         sequence = (pos_seq, neg_seq)
-        scores = fold_n_score2(sequence, spike, mega_type, dla_threshold=dla_threshold)
+        scores = fold_n_score2(sequence, spike, mega_type, dla_threshold=dla_threshold, rosetta=rosetta, renum=renum)
         # scores = [0.2, 0.3]
 
         # res_p = pd.Series({'Name': s_pos['Name'], "Binds": True,  'Score': scores[0], 'H': s_pos['VH or VHH'], 'L': s_pos['VL']}) #fking pandas depricated append!
