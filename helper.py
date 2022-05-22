@@ -53,3 +53,18 @@ def fold_n_score2(sequences, spike, mega_type=0, dla_threshold=0.06, rosetta=0, 
     print(f"Scores:"+ str(scores) + f" Time: {toc():.1f}")
 
     return scores
+
+
+# def read_fasta(fasta_file):
+#     buf = []
+#     with open(fasta_file, "r") as infile:
+#         for line_idx, line in enumerate(infile):
+#             if line.startswith(">"):  # label line
+#                 line = line[1:].strip()
+#                 if len(line) > 0:
+#                     cur_seq_label = line
+#                 else:
+#                     cur_seq_label = f"seqnum{line_idx:09d}"
+#             else:  # sequence line
+#                 buf.append(line.strip())
+#     return buf

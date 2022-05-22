@@ -16,13 +16,15 @@ import matplotlib
 from Bio.PDB import *
 from numpy.linalg import norm
 
+from embed import Embed
+
 matplotlib.use('TKAgg')
 from ttictoc import tic, toc
 # from igfold import IgFoldRunner, init_pyrosetta
 # from igfold import IgFoldRunner
 from prody import parsePDB, writePDB
 
-ig_fold_pdb = "ig_fold.pdb"
+
 
 ###################################
 # These are set thru arguments now
@@ -32,10 +34,24 @@ use_rosetta = 0
 renumber = 0
 #############################3#####
 
+spike = "7cr5_SPIKE.pdb"
+
+# the max distance between the atom and the line from H-end and L-end is about 38Å
+# so, we will block the atoms that are closer than about 1/3 of that
+block_distance = 38.0 / 3   # Å
+
+
+# start point Ab and the max length of the Ab chains including spacers and paddings
+# TODO: use ANARCI to insert spacers to fasta
+starting_point = "7lm9-Fv.fasta"
+
+# we calc this as max len for now in main()
+chain_max_length = 0
+
 movie_cnt = 0
 
-
-# we can align with ANARCY - add spacers. Do we want it?
+# folded ab name.
+ig_fold_pdb = "ig_fold.pdb"
 
 # we split the sequence to cdr/framework regions. we won't  optimise on constant framework
 # TODO: automate cdr detection ??
@@ -47,57 +63,8 @@ movie_cnt = 0
 # http://opig.stats.ox.ac.uk/webapps/newsabdab/sabpred/anarci/
 
 
-# the max distance between the atom and the line from H-end and L-end is about 38Å
-# so, we will block the atoms that are closer than about 1/3 of that
-block_distance = 38.0 / 3   # Å
-
-spike = "7cr5_SPIKE.pdb"
-
-# use Fv only 7cr5
-framework_H1 = "QVQLVESGGGVVQPGRSLRLSC"  # 1-22
-# cdr_H1 = "AASGFTFSSYIMH"
-cdr_H1 = "AASGFTF----SSYIMH"
-framework_H2 = "WVRQAPGKGLEWVA"
-# cdr_H2 = "VISYDGSNEA"
-cdr_H2 = "VISYD--GSNEA"
-framework_H3 = "YADSVKGRFTISRDNSKNTLYLQMSSLRAEDTGVYYC"
-cdr_H3 = "ARETGDYSSSWYDS"
-framework_H4 = "WGRGTLVTVSS"
-
-framework_L1 = "QLVLTQSPSASASLGASVKLTC"
-cdr_L1 = "TLSSGHSNYAIA"
-# cdr_L1 = "TLSSGHS-----NYAIA"
-framework_L2 = "WHQQQPEKGPRYLM"
-# cdr_L2 = "KVNSDGSHTKGD"
-cdr_L2 = "KVNSD---GSHTKGD"
-framework_L3 = "GIPDRFSGSSSGAERYLTISSLQSEDEADYYC"
-# cdr_L3 = "QTWGTGIQV"
-cdr_L3 = "QTWGT----GIQV"
-framework_L4 = "FGGGTKLTVL"
-
-
-# 7lm9
-spike = "7cr5_SPIKE.pdb"
-
-# EVQLVQSGAEVKKPGESLKISC QGSGYSFTSYWIG WVRQMPGKGLEWMG IIYPGESDTR YSSSFQGHVTISADKSISTAYLQWSSLKASDTAMYYC ARIRGVYSSGWIGGDY WGQGTLVTVSS
-# DIQMTQSPSSLSASVGDRVTITC RASQSISSYLN WYQQKPGKAPKLLI YAASSLQS GVPSRFSGSGSGTDFTLTISSLQPEDFATYYC QQSYSTPRQWT FGQGTKVEIK
-# framework_H1 = "EVQLVQSGAEVKKPGESLKISC"  #
-# cdr_H1 = "QGSGYSF----TSYWIG"
-# framework_H2 = "WVRQMPGKGLEWMG"
-# cdr_H2 = "IIYPG--ESDTR"
-# framework_H3 = "YSSSFQGHVTISADKSISTAYLQWSSLKASDTAMYYC"
-# cdr_H3 = "ARIRGVYSSGWIGGDY"
-# framework_H4 = "WGQGTLVTVSS"
-#
-# framework_L1 = "DIQMTQSPSSLSASVGDRVTITC"
-# cdr_L1 = "RASQSI------SSYLN"
-# framework_L2 = "WYQQKPGKAPKLLI"
-# cdr_L2 = "YAA-------SSLQS"
-# framework_L3 = "GVPSRFSGSGSGTDFTLTISSLQPEDFATYYC"
-# cdr_L3 = "QQSYST--PRQWT"
-# framework_L4 = "FGQGTKVEIK"
-
-
+# embedder class. keep global
+emb = Embed("esm1b_t33_650M_UR50S")
 
 residue_letters = [
     "-",  # spacer
@@ -123,10 +90,6 @@ residue_letters = [
     "Y",
 ]
 
-# list of pieces to block when docking - four from H and four from L
-# as long as the length of the Ab varies, we need to compare the new sequence every time with the framework pieces to block
-# block = ["LVESGGGVVQPGRSLR", "RQAPGKGLEW", "LQMSSLRAEDTGVYYC", "GTLVTV",
-#          "LTQSPSASASLG", "QQPEKGPR", "SSSGAERYLT", "FGGGTK"]
 
 # TODO: learn better embedding with lower dimensions and smooth space. Perhaps 2-3 layer net?
 residue_embedding = np.eye(21, 21, dtype=int)
@@ -134,129 +97,25 @@ residue_embedding = np.eye(21, 21, dtype=int)
 global_best_score = 999.0
 
 
-def residue2vector(residue):
-    return residue_embedding[residue_letters.index(residue)]
+# input arg: dict of Seq 'H', 'L'
+# len must be less than 1022 (ESM embedding limit)
+def seq2np(seq_dict):
+    return emb.embed(seq_dict)
 
 
-def np2seq(emb):
-    seq = ""
-    for a in emb:
-        new_letter = residue_letters[softmax(a).argmax()]
-        # if new_letter != '-':
-        seq = seq + new_letter
-    return seq
+# we do not separate CDRs here. We rely on the embedding as it includes the language model.
+# TODO: add auto CDR detection and candidates pruning inside the optimiser to increase the prob changes in CRDs rather than elsewhere??
+def np2full_seq(eee):
+    seqs = emb.de_embed(eee)
 
+    H = seqs['H']
+    L = seqs['L']
 
-def seq2np(seq):
-    out = []
-    for res in seq:
-        out.append(residue2vector(res))
-    return np.array(out)
-
-
-def hl2np(h, l):
-    h_np = seq2np(h)
-    l_np = seq2np(l)
-    return np.vstack((h_np, l_np)).flatten()
-
-
-def np2full_seq(emb):
-    hl_np = np.reshape(emb, (-1, 21))
-    hl_seq = np2seq(hl_np)
-
-    ptr1 = len(cdr_H1)
-    ptr2 = ptr1 + len(cdr_H2)
-    ptr3 = ptr2 + len(cdr_H3)
-    H = framework_H1 + hl_seq[0:ptr1] + \
-        framework_H2 + hl_seq[ptr1:ptr2] + \
-        framework_H3 + hl_seq[ptr2:ptr3] + framework_H4
-
-    ptr0 = ptr3
-    ptr1 = ptr0 + len(cdr_L1)
-    ptr2 = ptr1 + len(cdr_L2)
-    ptr3 = ptr2 + len(cdr_L3)
-    L = framework_L1 + hl_seq[ptr0:ptr1] + \
-        framework_L2 + hl_seq[ptr1:ptr2] + \
-        framework_L3 + hl_seq[ptr2:ptr3] + framework_L4
-
-    # remove spacers
+    # remove spacers if any
     H = H.replace("-", "")
     L = L.replace("-", "")
 
     return H, L
-
-
-def test_seq():
-    my_seq = "GATCG"
-    embedded = seq2np(my_seq)
-    seq = np2seq(embedded)
-    print(seq)
-
-
-def test_full_seq():
-    print(np2full_seq(seq2np(cdr_H1 + cdr_H2 + cdr_H3 + cdr_L1 + cdr_L2 + cdr_L3)))
-
-
-def check_stop(a):
-    # how do we stop the optimiser correctly??
-    if a.countiter > 10000:
-        print(a.countiter)
-
-
-def get_fitness(x):
-    HL = np2full_seq(x)
-    sequences = [SeqRecord(Seq(HL[0]), id='H', description="Optimiser Sample H"),
-                 SeqRecord(Seq(HL[1]), id="L", description="Optimiser Sample L")]
-    SeqIO.write(sequences, "./data/fitness.fasta", "fasta")
-    SeqIO.write(sequences, f"./data/{get_fitness.n}_fitness.fasta", "fasta")
-    get_fitness.n = get_fitness.n + 1
-
-    # run AlphaFold. To run multiple AFs set the thread_no to different ints!
-    thread_no = 0
-    output = subprocess.run(["./run_alpha.sh", "./data/fitness.fasta", f"{thread_no}"], capture_output=True, check=True)
-
-    # copy alphafold results to data dir
-    os.makedirs(f"./data/th.{thread_no}/", exist_ok=True)
-    os.system(f"cp -f /tmp/alphafold/th.{thread_no}/fitness.{thread_no}/renamed_* ./data/th.{thread_no}/")
-
-    # run docking/score
-    average_score = 0
-    best_score = 999
-    for i in range(5):
-        output = subprocess.run(["./run_score.sh", f"/workdir/th.{thread_no}/renamed_{i}.pdb", "/workdir/" + spike],
-                                capture_output=True, check=True)  # these paths are inside the container!
-        score = float(output.stdout.split()[-1])
-        average_score = average_score + score
-        if score < best_score:
-            best_score = score
-    average_score = average_score / 5
-
-    print(f"Best score: {best_score}, Average score {average_score}")
-
-    # return average_score #best_score
-    return best_score
-
-
-# create a file with receptor residues to block (for MEGADOCK)
-# we assume that the block seqs always exist!
-# def save_blocking_positions(sequence_H, sequence_L):
-#     ff = open("data/block-H.txt", "wt")
-#     # ff.write("H ")
-#     for iii in range(4):
-#         ptr_from = sequence_H.find(block[iii])
-#         if ptr_from < 0: raise Exception('Blocking sequence problem! (H)')
-#         ptr_to = ptr_from + len(block[iii])
-#         ff.write(f"{ptr_from + 1}-{ptr_to},")
-#     ff.close()
-#
-#     ff = open("data/block-L.txt", "wt")
-#     # ff.write("L ")
-#     for iii in range(4):
-#         ptr_from = sequence_L.find(block[iii + 4])
-#         if ptr_from < 0: raise Exception('Blocking sequence problem! (L)')
-#         ptr_to = ptr_from + len(block[iii + 4])
-#         ff.write(f"{ptr_from + 1}-{ptr_to},")
-#     ff.close()
 
 
 # https://stackoverflow.com/questions/39840030/distance-between-point-and-a-line-from-two-points
@@ -267,7 +126,7 @@ def t(p, q, r):
 def d(p, q, r):
     return np.linalg.norm(t(p, q, r)*(p-q)+q-r)
 
-# Automatically selects blocked residues based on distance from the line between end of H to the end of L.
+# Automatically mark blocked residues based on distance from the line between end of H to the end of L.
 # This requires pdb file as input.
 # It saves results only to one location. Thus, if we want split between threads, it must be updated accordingly
 def save_blocking_positions_pdb(pdb_file):
@@ -313,23 +172,6 @@ def fake_fitness(arg):
     return random.random()
 
 
-def run_alpha(thread_no: int):
-    # prepare thread
-    HL = np2full_seq(X[thread_no])
-    sequences = [SeqRecord(Seq(HL[0]), id='H', description="Optimiser Sample H"),
-                 SeqRecord(Seq(HL[1]), id="L", description="Optimiser Sample L")]
-    SeqIO.write(sequences, f"./data/fitness.{thread_no}.fasta", "fasta")
-    # SeqIO.write(sequences, f"./data/{get_fitness.n}_fitness.{thread_no}.fasta", "fasta")        # save temporary results
-
-    # run AlphaFold.
-    output = subprocess.run(["./run_alpha.sh", f"./data/fitness.{thread_no}.fasta", f"{thread_no}"],
-                            capture_output=True, check=True)
-
-    # copy alphafold results to data dir
-    os.makedirs(f"./data/th.{thread_no}/", exist_ok=True)
-    os.system(f"cp -f /tmp/alphafold/th.{thread_no}/fitness.{thread_no}/renamed_* ./data/th.{thread_no}/")
-
-
 def dock_score(thread_no: int):
     average_score = 0.0
     best_score = 999.0
@@ -344,102 +186,7 @@ def dock_score(thread_no: int):
     return (best_score, average_score)
 
 
-# input - list of 2 samples
-# folding with alphafold
-def double_fun(X):
-    # return (random.random(), random.random())     # test
-    global global_best_score
-    tic()
-
-    ##### these 2 calls must be run in parallel
-    # thread_no = 0
-    # run_alpha(thread_no)
-    # thread_no = 1
-    # run_alpha(thread_no)
-
-    # TODO: как X попадает в run_alpha() ??? какая-то хуйня
-    thread_numbers = (0, 1)
-    with Pool(2) as pool:
-        pool.map(run_alpha, thread_numbers)
-        # pool.close()  # do we need close/join when using context?
-        # pool.join()
-
-    ##### the following must run in sequence!
-
-    # with Pool(2) as pool:
-    #     result = pool.map(dock_score, thread_numbers)
-    #
-    # best_score_0, average_score_0 = result[0]
-    # best_score_1, average_score_1 = result[1]
-
-    # run docking/score for AF thread 0
-    thread_no = 0
-    average_score = 0.
-    best_score = 999.
-    best_score_idx = 999
-    for i in range(5):
-        output = subprocess.run(["./run_score.sh", f"/workdir/th.{thread_no}/renamed_{i}.pdb", "/workdir/" + spike],
-                                capture_output=True, check=True)  # these paths are inside the container!
-        score = float(output.stdout.split()[-1])
-        average_score = average_score + score
-        if score < best_score:
-            best_score = score
-            best_score_idx = i
-    average_score = average_score / 5.
-    best_score_0 = best_score
-    average_score_0 = average_score
-
-    # optionally copy the best pdb to save it
-    if best_score_idx != 999 and best_score < global_best_score:
-        shutil.copy(f"./data/th.{thread_no}/renamed_{best_score_idx}.pdb", "./data/best.pdb")
-        global_best_score = best_score
-
-    # run docking/score for AF thread 1
-    thread_no = 1
-    average_score = 0.
-    best_score = 999.
-    best_score_idx = 999
-    for i in range(5):
-        output = subprocess.run(["./run_score.sh", f"/workdir/th.{thread_no}/renamed_{i}.pdb", "/workdir/" + spike],
-                                capture_output=True, check=True)  # these paths are inside the container!
-        score = float(output.stdout.split()[-1])
-        average_score = average_score + score
-        if score < best_score:
-            best_score = score
-            best_score_idx = i
-    average_score = average_score / 5.
-    best_score_1 = best_score
-    average_score_1 = average_score
-
-    # optionally copy the best pdb to save it
-    if best_score_idx != 999 and best_score < global_best_score:
-        shutil.copy(f"./data/th.{thread_no}/renamed_{best_score_idx}.pdb", "./data/best.pdb")
-        global_best_score = best_score
-
-    print(f"Best 0,1: {best_score_0:.4f}, {best_score_1:.4f}, Average 0,1: {average_score_0:.4f} {average_score_1:.4f}, {toc():.2f}")
-
-    # TODO: Find out what is better average or best
-    return (average_score_0, average_score_1)
-    # return (best_score_0, best_score_1)
-
-
-# with locally installed Rosetta refinements
-# def ig_fold_rosetta(thread_no: int, xx):
-#     HL = np2full_seq(xx)
-#     sequences = {
-#         "H": HL[0],
-#         "L": HL[1],
-#     }
-#
-#     igfold = IgFoldRunner()
-#     igfold.fold(
-#         f"./data/th.{thread_no}/{ig_fold_pdb}",  # Output PDB file
-#         sequences=sequences,  # Antibody sequences
-#         do_refine=True,  # Refine the antibody structure with PyRosetta
-#         do_renum=True,  # Send predicted structure to AbNum server for Chothia renumbering
-#     )
-
-# with conteinerised Rosetta or OpenMM refinement running in docker container
+# with containerised Rosetta or OpenMM refinement running in docker container
 def ig_fold_docker(thread_no: int, xx):
     HL = np2full_seq(xx)
 
@@ -539,20 +286,23 @@ if __name__ == '__main__':
 
     print(time.asctime())
 
+    # calculate the size of the space. The embedding does pads shorter chain to the max len and it adds an extra marker at the start
+    # So, our space is (max(len(chainH,chainL)) + 1) * 2
+    # TODO: use ANARCI to insert spacers
+    start_seq = {}
+    for record in SeqIO.parse(starting_point, "fasta"):
+        start_seq[record.id] = record.seq
+        if len(record) > chain_max_length:
+            chain_max_length = len(record)
+        print(f"Sequence length of {record.id}: {len(record)}")
+
     if not os.path.exists("data"):
         os.mkdir("data")
 
-    x0 = seq2np(cdr_H1 + cdr_H2 + cdr_H3 + cdr_L1 + cdr_L2 + cdr_L3).flatten()
+    x0 = seq2np(start_seq).flatten()
 
-    # before docking we create 2 files with residues to block on receptor side. These should be unchangeable residues
-    HL = np2full_seq(x0)
-    # save_blocking_positions(HL[0], HL[1])
-
-    # fun = get_fitness
-    # get_fitness.n = 0
-    # fun = fake_fitness
-    # fun = double_fun
     fun = double_fun_igfold
+
     plot_avg = []
     plot_min = []
     sigma0 = 0.15  # initial standard deviation to sample new solutions - should be ~ 1/4 of range
@@ -563,7 +313,7 @@ if __name__ == '__main__':
                                       'ftarget': -3.0,
                                       'popsize': 18,
                                       'maxiter': 48,
-                                      'bounds': [-0.1, 1.1],
+                                      'bounds': [-80., 80.],
                                       'verb_time': 0,
                                       'verb_disp': 500,
                                       'seed': 3}, )
