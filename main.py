@@ -8,9 +8,7 @@ import cma
 import numpy as np
 from Bio import SeqIO
 from Bio.Seq import Seq
-# from Bio.SeqUtils import seq3
 from Bio.SeqRecord import SeqRecord
-from scipy.special import softmax
 import shutil
 import matplotlib
 from Bio.PDB import *
@@ -34,7 +32,7 @@ use_rosetta = 0
 renumber = 0
 #############################3#####
 
-spike = "7cr5_SPIKE.pdb"
+spike = "7lm9_spike_aligned.pdb"
 
 # the max distance between the atom and the line from H-end and L-end is about 38Å
 # so, we will block the atoms that are closer than about 1/3 of that
@@ -311,7 +309,7 @@ if __name__ == '__main__':
     es = cma.CMAEvolutionStrategy(x0, sigma0,
                                   inopts={
                                       'ftarget': -3.0,
-                                      'popsize': 18,
+                                      # 'popsize': 18,
                                       'maxiter': 48,
                                       'bounds': [-80., 80.],
                                       'verb_time': 0,

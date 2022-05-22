@@ -10,7 +10,6 @@ ig_fold_pdb = "ig_fold.pdb"
 
 # with conteinerised Rosetta or OpenMM refinement running in docker container
 def ig_fold_sequence(thread_no: int, sequence, use_rosetta=0, do_renum=0):
-    # TODO: set capture_output = True to get rid of extra output when fixed
     output = subprocess.run(
         ["./run_igfold.sh", f"./data/th.{thread_no}/{ig_fold_pdb}", sequence["H"], sequence["L"], f"--rosetta={use_rosetta}",
          f"--renum={do_renum}"],

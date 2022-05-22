@@ -83,7 +83,7 @@ class Embed(object):
                 tmp.append(self.alphabet.unique_no_split_tokens[match])
             blank = ''
             seqs[chain] = blank.join(tmp)
-            print('')
+            # print('')
 
         return seqs
 
