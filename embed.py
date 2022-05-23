@@ -76,9 +76,9 @@ class Embed(object):
                     continue
                 if match > 30:
                     continue
-                # we don't allow extra residues such as X B U Z O. Replace with '-'
-                if match >= 24 and match <= 28:
-                    tmp.append(self.alphabet.unique_no_split_tokens[30])
+                # we don't allow extra residues such as X B U Z O. Also WTF is "."? Replace with all '-'
+                if match >= 24 and match <= 29:
+                    tmp.append('-')
                     continue
                 tmp.append(self.alphabet.unique_no_split_tokens[match])
             blank = ''
@@ -86,6 +86,8 @@ class Embed(object):
             # print('')
 
         return seqs
+# esm alphabet
+# ['<cls>', '<pad>', '<eos>', '<unk>', 'L', 'A', 'G', 'V', 'S', 'E', 'R', 'T', 'I', 'D', 'P', 'K', 'Q', 'N', 'F', 'Y', 'M', 'H', 'W', 'C', 'X', 'B', 'U', 'Z', 'O', '.', '-', '<null_1>', '<mask>']
 
 
 # override the dataset to be initialised from Biopython sequence dict

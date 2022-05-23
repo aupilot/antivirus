@@ -15,6 +15,7 @@ from Bio.PDB import *
 from numpy.linalg import norm
 
 from embed import Embed
+from helper import highlight_differences
 
 matplotlib.use('TKAgg')
 from ttictoc import tic, toc
@@ -32,7 +33,7 @@ use_rosetta = 0
 renumber = 0
 #############################3#####
 
-spike = "7lm9_spike_aligned.pdb"
+spike = "7k9i_spike_aligned.pdb"
 
 # the max distance between the atom and the line from H-end and L-end is about 38Å
 # so, we will block the atoms that are closer than about 1/3 of that
@@ -116,6 +117,14 @@ def np2full_seq(eee):
     return H, L
 
 
+# do not remove "-" for demonstration only
+def np2seq_show(eee):
+    seqs = emb.de_embed(eee)
+    H = seqs['H']
+    L = seqs['L']
+    return H, L
+
+
 # https://stackoverflow.com/questions/39840030/distance-between-point-and-a-line-from-two-points
 def t(p, q, r):
     x = p-q
@@ -195,7 +204,7 @@ def ig_fold_docker(thread_no: int, xx):
             capture_output=True, check=True)
     except:
         # we run it again in the case of failure. Specifically designed to workaround OpenMM NaN exception for fuck knows reason
-        print("Exception occured in run_igfold.sh. Probably OpenMM NaN issue. Trying to re-run again")
+        print("Exception occured in run_igfold.sh. Trying to re-run again")
         output = subprocess.run(
             ["./run_igfold.sh", f"./data/th.{thread_no}/{ig_fold_pdb}", HL[0], HL[1], f"--rosetta={use_rosetta}",
              f"--renum={renumber}"],
@@ -308,8 +317,8 @@ if __name__ == '__main__':
     # # cfun = cma.ConstrainedFitnessAL(fun, constraints)  # unconstrained function with adaptive Lagrange multipliers
     es = cma.CMAEvolutionStrategy(x0, sigma0,
                                   inopts={
-                                      'ftarget': -3.0,
-                                      # 'popsize': 18,
+                                      'ftarget': -5.0,
+                                      'popsize': 20,        # must be even as we return pairs of target solutions
                                       'maxiter': 48,
                                       'bounds': [-80., 80.],
                                       'verb_time': 0,
@@ -331,6 +340,13 @@ if __name__ == '__main__':
 
         es.tell(X, V)
         # es.tell(X, [fun(x) for x in X])
+
+        # compare orig and current
+        sq1 = start_seq['H'] + ' ' + start_seq['L']
+        sq2 = np2full_seq(es.result.xfavorite)[0] + ' ' + np2full_seq(es.result.xfavorite)[1]
+        print(sq1)
+        print(sq2)
+        # print(highlight_differences(sq1, sq2))
 
         es.logger.add()  # for later plotting
         es.disp()
