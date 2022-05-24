@@ -3,12 +3,13 @@ import time
 from multiprocessing import Pool
 from prody import parsePDB, writePDB
 from ttictoc import tic, toc
+from Bio.Seq import Seq
 
 
 ig_fold_pdb = "ig_fold.pdb"
 
 
-# with conteinerised Rosetta or OpenMM refinement running in docker container
+# with conteinerised Rosetta or OpenMM refinement running in docker-anarci container
 def ig_fold_sequence(thread_no: int, sequence, use_rosetta=0, do_renum=0):
     output = subprocess.run(
         ["./run_igfold.sh", f"./data/th.{thread_no}/{ig_fold_pdb}", sequence["H"], sequence["L"], f"--rosetta={use_rosetta}",
@@ -72,21 +73,53 @@ def fold_n_score2(sequences, spike, mega_type=0, dla_threshold=0.06, rosetta=0, 
 # highligh differences in color
 import difflib
 
-red = lambda text: f"\033[38;2;255;0;0m{text}\033[38;2;255;255;255m"
-green = lambda text: f"\033[38;2;0;255;0m{text}\033[38;2;255;255;255m"
-blue = lambda text: f"\033[38;2;0;0;255m{text}\033[38;2;255;255;255m"
-white = lambda text: f"\033[38;2;255;255;255m{text}\033[38;2;255;255;255m"
+# red = lambda text: f"\033[38;2;255;0;0m{text}\033[38;2;255;255;255m"
+# green = lambda text: f"\033[38;2;0;255;0m{text}\033[38;2;255;255;255m"
+# blue = lambda text: f"\033[38;2;0;0;255m{text}\033[38;2;255;255;255m"
+# white = lambda text: f"\033[38;2;255;255;255m{text}\033[38;2;255;255;255m"
+
+red = lambda text: f"\033[38;2;255;0;0m{text}\033[m"
+green = lambda text: f"\033[38;2;0;255;0m{text}\033[m"
+blue = lambda text: f"\033[38;2;0;0;255m{text}\033[m"
+white = lambda text: f"\033[38;2;255;255;255m{text}\033[m"
+native = lambda text: f"\033[m{text}"
 
 def highlight_differences(old, new):
     result = ""
     codes = difflib.SequenceMatcher(a=old, b=new).get_opcodes()
     for code in codes:
         if code[0] == "equal":
-            result += white(old[code[1]:code[2]])
+            result += native(old[code[1]:code[2]])
         elif code[0] == "delete":
             result += red(old[code[1]:code[2]])
         elif code[0] == "insert":
             result += green(new[code[3]:code[4]])
         elif code[0] == "replace":
-            result += (red(old[code[1]:code[2]]) + green(new[code[3]:code[4]]))
+            result += blue(new[code[3]:code[4]])
+
     return result
+
+def insert_spacers(sequences):
+    # use ANARCI MSA to insert spacers
+    # http://opig.stats.ox.ac.uk/webapps/newsabdab/sabpred/anarci/
+    # schema = 'a'  # Aho
+    schema = 'i'  # IMGT
+    # schema = 'c' # Chothia
+
+    new_sequences = {}
+    for key, seq in sequences.items():
+        str_seq = str(seq)
+        output = subprocess.run(["docker", "run", "-t", "--rm", r"8kir8/anarci:220524.1", "ANARCI", "-s", f"{schema}", "-i", f"{str_seq}"], capture_output=True, check=True)
+        # "docker run -it --rm  8kir8/anarci:220524.1 ANARCI -s a -i EVQLVQSGAEVKKPGESLKISCQGSGYSFTSYWIGWVRQMPGKGLEWMGIIYPGESDTRYSSSFQGHVTISADKSISTAYLQWSSLKASDTAMYYCARIRGVYSSGWIGGDYWGQGTLVTVSS"
+        new_str_seq = ""
+        out_text = output.stdout.decode().split("\n")
+        for line in out_text:
+            if line[0] == '#':
+                continue
+            if line[0] == 'H' or line[0] == 'L':
+                new_str_seq += line[10]
+            if line[0] == '/':
+                break
+        new_sequences[key] = Seq(new_str_seq)
+        print(new_str_seq)
+    return new_sequences

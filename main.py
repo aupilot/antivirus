@@ -15,7 +15,7 @@ from Bio.PDB import *
 from numpy.linalg import norm
 
 from embed import Embed
-from helper import highlight_differences
+from helper import highlight_differences, insert_spacers
 
 matplotlib.use('TKAgg')
 from ttictoc import tic, toc
@@ -193,7 +193,7 @@ def dock_score(thread_no: int):
     return (best_score, average_score)
 
 
-# with containerised Rosetta or OpenMM refinement running in docker container
+# with containerised Rosetta or OpenMM refinement running in docker-anarci container
 def ig_fold_docker(thread_no: int, xx):
     HL = np2full_seq(xx)
 
@@ -303,16 +303,19 @@ if __name__ == '__main__':
             chain_max_length = len(record)
         print(f"Sequence length of {record.id}: {len(record)}")
 
+    print("Adding spacers with ANARCI")
+    start_seq_spacers = insert_spacers(start_seq)
+
     if not os.path.exists("data"):
         os.mkdir("data")
 
-    x0 = seq2np(start_seq).flatten()
+    x0 = seq2np(start_seq_spacers).flatten()
 
     fun = double_fun_igfold
 
     plot_avg = []
     plot_min = []
-    sigma0 = 0.15  # initial standard deviation to sample new solutions - should be ~ 1/4 of range
+    sigma0 = 0.10  # initial standard deviation to sample new solutions - should be ~ 1/4 of range
 
     # # cfun = cma.ConstrainedFitnessAL(fun, constraints)  # unconstrained function with adaptive Lagrange multipliers
     es = cma.CMAEvolutionStrategy(x0, sigma0,
@@ -343,10 +346,10 @@ if __name__ == '__main__':
 
         # compare orig and current
         sq1 = start_seq['H'] + ' ' + start_seq['L']
-        sq2 = np2full_seq(es.result.xfavorite)[0] + ' ' + np2full_seq(es.result.xfavorite)[1]
+        sq2 = np2seq_show(es.result.xfavorite)[0] + ' ' + np2seq_show(es.result.xfavorite)[1]
         print(sq1)
         print(sq2)
-        # print(highlight_differences(sq1, sq2))
+        print(highlight_differences(sq1, sq2))
 
         es.logger.add()  # for later plotting
         es.disp()
