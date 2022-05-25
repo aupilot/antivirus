@@ -4,7 +4,8 @@ from multiprocessing import Pool
 from prody import parsePDB, writePDB
 from ttictoc import tic, toc
 from Bio.Seq import Seq
-
+import Bio.PDB
+import difflib
 
 ig_fold_pdb = "ig_fold.pdb"
 
@@ -71,7 +72,6 @@ def fold_n_score2(sequences, spike, mega_type=0, dla_threshold=0.06, rosetta=0, 
 
 
 # highligh differences in color
-import difflib
 
 # red = lambda text: f"\033[38;2;255;0;0m{text}\033[38;2;255;255;255m"
 # green = lambda text: f"\033[38;2;0;255;0m{text}\033[38;2;255;255;255m"
@@ -99,6 +99,7 @@ def highlight_differences(old, new):
 
     return result
 
+
 def insert_spacers(sequences):
     # use ANARCI MSA to insert spacers
     # http://opig.stats.ox.ac.uk/webapps/newsabdab/sabpred/anarci/
@@ -123,3 +124,54 @@ def insert_spacers(sequences):
         new_sequences[key] = Seq(new_str_seq)
         print(new_str_seq)
     return new_sequences
+
+
+# read sample pdb file, align agaist the reference and save to output
+def align(reference, sample, output):
+    # Select what residues we wish to align. Ideally, we need to renumber?
+    start_id = 1
+    end_id = 100
+    atoms_to_be_aligned = range(start_id, end_id + 1)
+
+    pdb_parser = Bio.PDB.PDBParser(QUIET=False)
+
+    ref_structure = pdb_parser.get_structure("reference", reference)
+    sample_structure = pdb_parser.get_structure("sample", sample)
+
+    # Use the first model in the pdb-files for alignment (we only have one)
+    ref_model = ref_structure[0]
+    sample_model = sample_structure[0]
+
+    # Make a list of the CA atoms we wish to align
+    ref_atoms = []
+    sample_atoms = []
+
+    # Iterate of all chains in the model in order to find all residues
+    for ref_chain in ref_model:
+        # Iterate of all residues in each model in order to find proper atoms
+        for ref_res in ref_chain:
+            # Check if residue number is in the list
+            if ref_res.get_id()[1] in atoms_to_be_aligned:
+                # Append CA atom to list
+                ref_atoms.append(ref_res['CA'])
+
+    # Do the same for the sample structure
+    for sample_chain in sample_model:
+        for sample_res in sample_chain:
+            if sample_res.get_id()[1] in atoms_to_be_aligned:
+                sample_atoms.append(sample_res['CA'])
+
+    # Now we initiate the superimposer:
+    super_imposer = Bio.PDB.Superimposer()
+    super_imposer.set_atoms(ref_atoms, sample_atoms)
+    super_imposer.apply(sample_model.get_atoms())
+
+    # print(super_imposer.rms)
+    if super_imposer.rms > 6.0:
+        raise Exception("Something is wrong with PDB alignment")
+
+    # Save the aligned version of a pdb
+    io = Bio.PDB.PDBIO()
+    io.set_structure(sample_structure)
+    io.save(output)
+

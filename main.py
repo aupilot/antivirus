@@ -15,7 +15,7 @@ from Bio.PDB import *
 from numpy.linalg import norm
 
 from embed import Embed
-from helper import highlight_differences, insert_spacers
+from helper import highlight_differences, insert_spacers, align
 
 matplotlib.use('TKAgg')
 from ttictoc import tic, toc
@@ -33,7 +33,9 @@ use_rosetta = 0
 renumber = 0
 #############################3#####
 
+# !!! we need to manually roughly align the spike over a typical Ab Fv
 spike = "7k9i_spike_aligned.pdb"
+aligned_over = "alignment.pdb"
 
 # the max distance between the atom and the line from H-end and L-end is about 38Å
 # so, we will block the atoms that are closer than about 1/3 of that
@@ -51,6 +53,7 @@ movie_cnt = 0
 
 # folded ab name.
 ig_fold_pdb = "ig_fold.pdb"
+ig_fold_aligned_pdb = "ig_fold_aligned.pdb"
 
 # we split the sequence to cdr/framework regions. we won't  optimise on constant framework
 # TODO: automate cdr detection ??
@@ -193,7 +196,7 @@ def dock_score(thread_no: int):
     return (best_score, average_score)
 
 
-# with containerised Rosetta or OpenMM refinement running in docker-anarci container
+# with containerised Rosetta or OpenMM refinement running in docker container
 def ig_fold_docker(thread_no: int, xx):
     HL = np2full_seq(xx)
 
@@ -210,10 +213,13 @@ def ig_fold_docker(thread_no: int, xx):
              f"--renum={renumber}"],
             capture_output=True, check=True)
 
+    # now we need to rotate the model in PDB to have it aligned always the same way
+    align(reference=aligned_over, sample=f"./data/th.{thread_no}/{ig_fold_pdb}", output=f"./data/th.{thread_no}/{ig_fold_aligned_pdb}")
+
     # once folded, we need to select the residues to block. They will be the same most the time for all threads,
     # so we don't bother to run it multiple times. Only in thread 0
     if thread_no == 0:
-        save_blocking_positions_pdb(f"./data/th.{thread_no}/{ig_fold_pdb}")
+        save_blocking_positions_pdb(f"./data/th.{thread_no}/{ig_fold_aligned_pdb}")
 
 
 # input - list of 2 samples
@@ -235,26 +241,26 @@ def double_fun_igfold(X):
     # run docking/score for AF thread 0
     thread_no = 0
     output = subprocess.run(
-        ["./run_score.sh", f"/workdir/th.{thread_no}/{ig_fold_pdb}", "/workdir/" + spike, f"{dla_threshold}",
+        ["./run_score.sh", f"/workdir/th.{thread_no}/{ig_fold_aligned_pdb}", "/workdir/" + spike, f"{dla_threshold}",
          f"{mega_type}"],
         capture_output=True, check=True)  # these paths are inside the container!
     best_score_0 = float(output.stdout.split()[-1])
     # optionally copy the best pdb to save it
     if best_score_0 < global_best_score:
-        shutil.copy(f"./data/th.{thread_no}/{ig_fold_pdb}", f"./data/best{movie_cnt}.pdb")
+        shutil.copy(f"./data/th.{thread_no}/{ig_fold_aligned_pdb}", f"./data/best_{movie_cnt:02d}.pdb")
         global_best_score = best_score_0
         movie_cnt += 1
 
     # run docking/score for AF thread 1
     thread_no = 1
     output = subprocess.run(
-        ["./run_score.sh", f"/workdir/th.{thread_no}/{ig_fold_pdb}", "/workdir/" + spike, f"{dla_threshold}",
+        ["./run_score.sh", f"/workdir/th.{thread_no}/{ig_fold_aligned_pdb}", "/workdir/" + spike, f"{dla_threshold}",
          f"{mega_type}"],
         capture_output=True, check=True)  # these paths are inside the container!
     best_score_1 = float(output.stdout.split()[-1])
     # optionally copy the best pdb to save it
     if best_score_1 < global_best_score:
-        shutil.copy(f"./data/th.{thread_no}/{ig_fold_pdb}", f"./data/best{movie_cnt}.pdb")
+        shutil.copy(f"./data/th.{thread_no}/{ig_fold_aligned_pdb}", f"./data/best_{movie_cnt:02d}.pdb")
         global_best_score = best_score_1
         movie_cnt += 1
 
@@ -315,7 +321,7 @@ if __name__ == '__main__':
 
     plot_avg = []
     plot_min = []
-    sigma0 = 0.10  # initial standard deviation to sample new solutions - should be ~ 1/4 of range
+    sigma0 = 0.2  # initial standard deviation to sample new solutions - should be ~ 1/4 of range
 
     # # cfun = cma.ConstrainedFitnessAL(fun, constraints)  # unconstrained function with adaptive Lagrange multipliers
     es = cma.CMAEvolutionStrategy(x0, sigma0,
@@ -345,7 +351,7 @@ if __name__ == '__main__':
         # es.tell(X, [fun(x) for x in X])
 
         # compare orig and current
-        sq1 = start_seq['H'] + ' ' + start_seq['L']
+        sq1 = start_seq_spacers['H'] + ' ' + start_seq_spacers['L']
         sq2 = np2seq_show(es.result.xfavorite)[0] + ' ' + np2seq_show(es.result.xfavorite)[1]
         print(sq1)
         print(sq2)
