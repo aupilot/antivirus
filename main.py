@@ -68,29 +68,29 @@ ig_fold_aligned_pdb = "ig_fold_aligned.pdb"
 # embedder class. keep global
 emb = Embed("esm1b_t33_650M_UR50S")
 
-residue_letters = [
-    "-",  # spacer
-    "A",
-    "C",
-    "D",
-    "E",
-    "F",
-    "G",
-    "H",
-    "I",
-    "K",
-    "L",
-    "M",
-    "N",
-    "P",
-    "Q",
-    "R",
-    "S",
-    "T",
-    "V",
-    "W",
-    "Y",
-]
+# residue_letters = [
+#     "-",  # spacer
+#     "A",
+#     "C",
+#     "D",
+#     "E",
+#     "F",
+#     "G",
+#     "H",
+#     "I",
+#     "K",
+#     "L",
+#     "M",
+#     "N",
+#     "P",
+#     "Q",
+#     "R",
+#     "S",
+#     "T",
+#     "V",
+#     "W",
+#     "Y",
+# ]
 
 
 # TODO: learn better embedding with lower dimensions and smooth space. Perhaps 2-3 layer net?
@@ -299,9 +299,6 @@ if __name__ == '__main__':
 
     print(time.asctime())
 
-    # calculate the size of the space. The embedding does pads shorter chain to the max len and it adds an extra marker at the start
-    # So, our space is (max(len(chainH,chainL)) + 1) * 2
-    # TODO: use ANARCI to insert spacers
     start_seq = {}
     for record in SeqIO.parse(starting_point, "fasta"):
         start_seq[record.id] = record.seq
@@ -321,14 +318,14 @@ if __name__ == '__main__':
 
     plot_avg = []
     plot_min = []
-    sigma0 = 0.2  # initial standard deviation to sample new solutions - should be ~ 1/4 of range
+    sigma0 = 0.05  # initial standard deviation to sample new solutions - should be ~ 1/4 of range???
 
     # # cfun = cma.ConstrainedFitnessAL(fun, constraints)  # unconstrained function with adaptive Lagrange multipliers
     es = cma.CMAEvolutionStrategy(x0, sigma0,
                                   inopts={
                                       'ftarget': -5.0,
-                                      'popsize': 20,        # must be even as we return pairs of target solutions
-                                      'maxiter': 48,
+                                      'popsize': 18,        # must be even as we return pairs of target solutions
+                                      'maxiter': 28,
                                       'bounds': [-80., 80.],
                                       'verb_time': 0,
                                       'verb_disp': 500,

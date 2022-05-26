@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import os
+import shutil
 import sys
 import subprocess
 import argparse
@@ -13,6 +14,7 @@ import random
 ##### this script sits inside a container
 
 good_decoys = "/opt/var/good_decoys/"
+save_best = "/workdir/best_decoys/"
 
 # n_scored_decoys = 8
 records = ('ATOM', 'HETATM', 'ANISOU', 'TER')
@@ -78,6 +80,7 @@ def vina_score():
 
     scores = []
     decoy_no = 0
+    best_affinity = 10
     for dec in decoy_list:
         if not dec.endswith("pdb"):
             continue
@@ -134,7 +137,12 @@ def vina_score():
         affinity_txt = affinity_lines[0]
         print(f"Dec {decoy_no} {affinity_txt}")
 
-        scores.append(float(affinity_txt.split()[1]))
+        affinity = float(affinity_txt.split()[1])
+        scores.append(affinity)
+        if affinity < best_affinity and affinity < -0.4:
+            best_affinity = affinity
+            # copy the whole decoy to save the complex
+            shutil.copy(good_decoys+dec, f"{save_best}dec_{-affinity:.2f}.pdb")
 
     if len(scores) == 0:
         return 10.0
@@ -176,7 +184,8 @@ if __name__ == '__main__':
         print("Legand PDB does not exist!")
         exit(1)
 
-    os.makedirs("/opt/var",exist_ok=True)
+    os.makedirs("/opt/var", exist_ok=True)
+    os.makedirs(save_best, exist_ok=True)
 
     print('Docking:')
     print(args.receptor)
