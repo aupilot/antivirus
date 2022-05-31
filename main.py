@@ -35,6 +35,8 @@ renumber = 0
 
 # !!! we need to manually roughly align the spike over a typical Ab Fv
 spike = "7k9i_spike_aligned.pdb"
+spike2 = "7mem_spike_aligned.pdb"
+
 aligned_over = "alignment.pdb"
 
 # the max distance between the atom and the line from H-end and L-end is about 38Å
@@ -238,35 +240,36 @@ def double_fun_igfold(X):
     # ig_fold_openmm(thread_no, X[thread_no])
 
     ##### the following must run in sequence!
-    # run docking/score for AF thread 0
-    thread_no = 0
-    output = subprocess.run(
-        ["./run_score.sh", f"/workdir/th.{thread_no}/{ig_fold_aligned_pdb}", "/workdir/" + spike, f"{dla_threshold}",
-         f"{mega_type}"],
-        capture_output=True, check=True)  # these paths are inside the container!
-    best_score_0 = float(output.stdout.split()[-1])
-    # optionally copy the best pdb to save it
-    if best_score_0 < global_best_score:
-        shutil.copy(f"./data/th.{thread_no}/{ig_fold_aligned_pdb}", f"./data/best_{movie_cnt:02d}.pdb")
-        global_best_score = best_score_0
-        movie_cnt += 1
+    best_score = [10., 10.]
+    for thread_no in [0,1]:
+        # run docking/score for AF thread 0
+        output = subprocess.run(
+            ["./run_score.sh", f"/workdir/th.{thread_no}/{ig_fold_aligned_pdb}", "/workdir/" + spike, f"{dla_threshold}",
+             f"{mega_type}"],
+            capture_output=True, check=True)  # these paths are inside the container!
+        best_score[thread_no] = float(output.stdout.split()[-1])
+        # optionally copy the best pdb to save it
+        if best_score[thread_no] < global_best_score:
+            shutil.copy(f"./data/th.{thread_no}/{ig_fold_aligned_pdb}", f"./data/best_{movie_cnt:02d}.pdb")
+            global_best_score = best_score[thread_no]
+            movie_cnt += 1
 
-    # run docking/score for AF thread 1
-    thread_no = 1
-    output = subprocess.run(
-        ["./run_score.sh", f"/workdir/th.{thread_no}/{ig_fold_aligned_pdb}", "/workdir/" + spike, f"{dla_threshold}",
-         f"{mega_type}"],
-        capture_output=True, check=True)  # these paths are inside the container!
-    best_score_1 = float(output.stdout.split()[-1])
-    # optionally copy the best pdb to save it
-    if best_score_1 < global_best_score:
-        shutil.copy(f"./data/th.{thread_no}/{ig_fold_aligned_pdb}", f"./data/best_{movie_cnt:02d}.pdb")
-        global_best_score = best_score_1
-        movie_cnt += 1
+    # # run docking/score for AF thread 1
+    # thread_no = 1
+    # output = subprocess.run(
+    #     ["./run_score.sh", f"/workdir/th.{thread_no}/{ig_fold_aligned_pdb}", "/workdir/" + spike, f"{dla_threshold}",
+    #      f"{mega_type}"],
+    #     capture_output=True, check=True)  # these paths are inside the container!
+    # best_score_1 = float(output.stdout.split()[-1])
+    # # optionally copy the best pdb to save it
+    # if best_score_1 < global_best_score:
+    #     shutil.copy(f"./data/th.{thread_no}/{ig_fold_aligned_pdb}", f"./data/best_{movie_cnt:02d}.pdb")
+    #     global_best_score = best_score_1
+    #     movie_cnt += 1
 
-    print(f"Scores: {best_score_0:.4f} {best_score_1:.4f}, The best: {global_best_score:.4f}, Time: {toc():.1f}")
+    print(f"Scores: {best_score[0]:.4f} {best_score[1]:.4f}, The best: {global_best_score:.4f}, Time: {toc():.1f}")
 
-    return (best_score_0, best_score_1)
+    return (best_score[0], best_score[1])
 
 
 def get_args():
