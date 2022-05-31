@@ -5,6 +5,8 @@ from Bio.PDB import PDBList, PDBIO, PDBParser
 
 """
 Renames chains in PDB file
+1. Change the dict renames below
+2. python3 rename.py data/7mem_spike_tmp.pdb data/7mem_spike_aligned.pdb
 """
 
 pdbl = PDBList()
@@ -21,6 +23,7 @@ structure = parser.get_structure('kir', inp_file)
 renames = {
     "A": "H",
     "B": "L",
+    "C": "A"
 }
 
 for model in structure:

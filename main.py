@@ -33,10 +33,8 @@ use_rosetta = 0
 renumber = 0
 #############################3#####
 
-# !!! we need to manually roughly align the spike over a typical Ab Fv
-spike = "7k9i_spike_aligned.pdb"
-spike2 = "7mem_spike_aligned.pdb"
-
+# !!! we need to manually roughly align the spike over a typical Ab Fv. The chain must be renamed to "A" with rename.py
+spike_list = ["7k9i_spike_aligned.pdb", "7mem_spike_aligned.pdb"]
 aligned_over = "alignment.pdb"
 
 # the max distance between the atom and the line from H-end and L-end is about 38Å
@@ -184,20 +182,6 @@ def fake_fitness(arg):
     return random.random()
 
 
-def dock_score(thread_no: int):
-    average_score = 0.0
-    best_score = 999.0
-    for i in range(5):
-        output = subprocess.run(["./run_score.sh", f"/workdir/th.{thread_no}/renamed_{i}.pdb", "/workdir/" + spike],
-                                capture_output=True, check=True)  # these paths are inside the container!
-        score = float(output.stdout.split()[-1])
-        average_score = average_score + score
-        if score < best_score:
-            best_score = score
-    average_score = average_score / 5.
-    return (best_score, average_score)
-
-
 # with containerised Rosetta or OpenMM refinement running in docker container
 def ig_fold_docker(thread_no: int, xx):
     HL = np2full_seq(xx)
@@ -230,42 +214,29 @@ def double_fun_igfold(X):
     global movie_cnt
     tic()
 
-    ##### these 2 calls can be run in parallel??
+    ##### these 2 calls can be run in parallel
     thread_numbers = (0, 1)
     with Pool(2) as pool:
         pool.starmap(ig_fold_docker, zip(thread_numbers, X))
-    # thread_no = 0
-    # ig_fold_openmm(thread_no, X[thread_no])
-    # thread_no = 1
-    # ig_fold_openmm(thread_no, X[thread_no])
 
-    ##### the following must run in sequence!
-    best_score = [10., 10.]
-    for thread_no in [0,1]:
-        # run docking/score for AF thread 0
-        output = subprocess.run(
-            ["./run_score.sh", f"/workdir/th.{thread_no}/{ig_fold_aligned_pdb}", "/workdir/" + spike, f"{dla_threshold}",
-             f"{mega_type}"],
-            capture_output=True, check=True)  # these paths are inside the container!
-        best_score[thread_no] = float(output.stdout.split()[-1])
+    ##### the following must run in sequence! Perhaps unless a better computer
+    best_score = [0., 0.]
+    for thread_no in [0, 1]:
+        # run docking/score for all spikes in the list
+        for spike in spike_list:
+            # run dock & score to (multiple) paratopes
+            output = subprocess.run(
+                ["./run_score.sh", f"/workdir/th.{thread_no}/{ig_fold_aligned_pdb}", "/workdir/" + spike, f"{dla_threshold}",
+                 f"{mega_type}"],
+                capture_output=True, check=True)  # these paths are inside the container!
+            best_score[thread_no] += float(output.stdout.split()[-1])                   # TODO: perhaps there is a better way of combining scores
+        best_score[thread_no] = best_score[thread_no] / len(spike_list)                 # ----
+
         # optionally copy the best pdb to save it
         if best_score[thread_no] < global_best_score:
             shutil.copy(f"./data/th.{thread_no}/{ig_fold_aligned_pdb}", f"./data/best_{movie_cnt:02d}.pdb")
             global_best_score = best_score[thread_no]
             movie_cnt += 1
-
-    # # run docking/score for AF thread 1
-    # thread_no = 1
-    # output = subprocess.run(
-    #     ["./run_score.sh", f"/workdir/th.{thread_no}/{ig_fold_aligned_pdb}", "/workdir/" + spike, f"{dla_threshold}",
-    #      f"{mega_type}"],
-    #     capture_output=True, check=True)  # these paths are inside the container!
-    # best_score_1 = float(output.stdout.split()[-1])
-    # # optionally copy the best pdb to save it
-    # if best_score_1 < global_best_score:
-    #     shutil.copy(f"./data/th.{thread_no}/{ig_fold_aligned_pdb}", f"./data/best_{movie_cnt:02d}.pdb")
-    #     global_best_score = best_score_1
-    #     movie_cnt += 1
 
     print(f"Scores: {best_score[0]:.4f} {best_score[1]:.4f}, The best: {global_best_score:.4f}, Time: {toc():.1f}")
 
