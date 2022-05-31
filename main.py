@@ -29,12 +29,13 @@ from prody import parsePDB, writePDB
 # These are set thru arguments now
 dla_threshold = 0.06
 mega_type = 1           # 0 - original, 1 - kir's, ...
-use_rosetta = 0
+use_rosetta = 0         # refinement: 0 = mmds, 1 = rosetta
 renumber = 0
 #############################3#####
 
 # !!! we need to manually roughly align the spike over a typical Ab Fv
 spike = "7k9i_spike_aligned.pdb"
+# spike = "7e3c_spike_aligned.pdb"
 aligned_over = "alignment.pdb"
 
 # the max distance between the atom and the line from H-end and L-end is about 38Å
@@ -43,8 +44,8 @@ block_distance = 38.0 / 3   # Å
 
 
 # start point Ab and the max length of the Ab chains including spacers and paddings
-# TODO: use ANARCI to insert spacers to fasta
 starting_point = "7lm9-Fv.fasta"
+# starting_point = "7cr5_Fv.fasta"
 
 # we calc this as max len for now in main()
 chain_max_length = 0
@@ -106,8 +107,8 @@ def seq2np(seq_dict):
 
 
 # we do not separate CDRs here. We rely on the embedding as it includes the language model.
-# TODO: add auto CDR detection and candidates pruning inside the optimiser to increase the prob changes in CRDs rather than elsewhere??
-def np2full_seq(eee):
+# TODO: ?? add auto CDR detection and candidates pruning inside the optimiser to increase the prob changes in CRDs rather than elsewhere??
+def np2seq(eee):
     seqs = emb.de_embed(eee)
 
     H = seqs['H']
@@ -198,7 +199,7 @@ def dock_score(thread_no: int):
 
 # with containerised Rosetta or OpenMM refinement running in docker container
 def ig_fold_docker(thread_no: int, xx):
-    HL = np2full_seq(xx)
+    HL = np2seq(xx)
 
     try:
         output = subprocess.run(
@@ -318,15 +319,15 @@ if __name__ == '__main__':
 
     plot_avg = []
     plot_min = []
-    sigma0 = 0.05  # initial standard deviation to sample new solutions - should be ~ 1/4 of range???
+    sigma0 = 0.2  # initial standard deviation to sample new solutions - should be ~ 1/4 of range???
 
     # # cfun = cma.ConstrainedFitnessAL(fun, constraints)  # unconstrained function with adaptive Lagrange multipliers
     es = cma.CMAEvolutionStrategy(x0, sigma0,
                                   inopts={
                                       'ftarget': -5.0,
                                       'popsize': 18,        # must be even as we return pairs of target solutions
-                                      'maxiter': 28,
-                                      'bounds': [-80., 80.],
+                                      'maxiter': 20,
+                                      'bounds': [-70., 70.],
                                       'verb_time': 0,
                                       'verb_disp': 500,
                                       'seed': 3}, )
@@ -363,7 +364,7 @@ if __name__ == '__main__':
     # res = np2full_seq(es.result.xbest)
     # the result as the mean of the metamodel gaussian rather than the best candidate:
     res = es.result.xfavorite
-    seq = np2full_seq(res)
+    seq = np2seq(res)
 
     sequences = [SeqRecord(Seq(seq[0]), id='H', description="Optimised Ab H"),
                  SeqRecord(Seq(seq[1]), id="L", description="Optimised Ab L")]

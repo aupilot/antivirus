@@ -23,7 +23,8 @@ def fold_n_score2(sequences, spike, mega_type=0, dla_threshold=0.06, rosetta=0, 
     tic()
 
     ##### these 2 calls can be run in parallel
-    thread_numbers = (0, 1)
+    # thread_numbers = (0, 1)
+    thread_numbers = [0]
     rosetta_n = [rosetta]*2
     renum_n = [renum]*2
     with Pool(2) as pool:
@@ -167,7 +168,7 @@ def align(reference, sample, output):
     super_imposer.apply(sample_model.get_atoms())
 
     # print(super_imposer.rms)
-    if super_imposer.rms > 6.0:
+    if super_imposer.rms > 20.0:
         raise Exception("Something is wrong with PDB alignment")
 
     # Save the aligned version of a pdb
