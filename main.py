@@ -34,7 +34,7 @@ renumber = 0
 #############################3#####
 
 # !!! we need to manually roughly align the spike over a typical Ab Fv. The chain must be renamed to "A" with rename.py
-spike_list = ["7k9i_spike_aligned.pdb", "7mem_spike_aligned.pdb"]
+spike_list = ["7e3c_spike_aligned.pdb", "7mem_spike_aligned.pdb"]
 aligned_over = "alignment.pdb"
 
 # the max distance between the atom and the line from H-end and L-end is about 38Å
@@ -220,17 +220,18 @@ def double_fun_igfold(X):
         pool.starmap(ig_fold_docker, zip(thread_numbers, X))
 
     ##### the following must run in sequence! Perhaps unless a better computer
-    best_score = [0., 0.]
-    for thread_no in [0, 1]:
+    best_score_sep = np.zeros((len(thread_numbers), len(spike_list)))
+    best_score = [0.,0.]
+    for thread_no in thread_numbers:
         # run docking/score for all spikes in the list
-        for spike in spike_list:
+        for s, spike in enumerate(spike_list):
             # run dock & score to (multiple) paratopes
             output = subprocess.run(
                 ["./run_score.sh", f"/workdir/th.{thread_no}/{ig_fold_aligned_pdb}", "/workdir/" + spike, f"{dla_threshold}",
                  f"{mega_type}"],
                 capture_output=True, check=True)  # these paths are inside the container!
-            best_score[thread_no] += float(output.stdout.split()[-1])                   # TODO: perhaps there is a better way of combining scores
-        best_score[thread_no] = best_score[thread_no] / len(spike_list)                 # ----
+            best_score_sep[s,thread_no] = float(output.stdout.split()[-1])                          # TODO: perhaps there is a better way of combining scores
+        best_score[thread_no] = np.sum(best_score_sep[:,thread_no]) / len(spike_list)               # ----
 
         # optionally copy the best pdb to save it
         if best_score[thread_no] < global_best_score:
@@ -238,7 +239,7 @@ def double_fun_igfold(X):
             global_best_score = best_score[thread_no]
             movie_cnt += 1
 
-    print(f"Scores: {best_score[0]:.4f} {best_score[1]:.4f}, The best: {global_best_score:.4f}, Time: {toc():.1f}")
+    print(f"Scores S1/S2, S1/S2: {best_score_sep[0][0]:.4f}/{best_score_sep[0][1]:.4f}, {best_score[1][0]:.4f}/{best_score_sep[1][1]:.4f}, The best: {global_best_score:.4f}, Time: {toc():.1f}")
 
     return (best_score[0], best_score[1])
 
