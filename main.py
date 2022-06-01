@@ -239,7 +239,7 @@ def double_fun_igfold(X):
             global_best_score = best_score[thread_no]
             movie_cnt += 1
 
-    print(f"Scores S1/S2, S1/S2: {best_score_sep[0][0]:.4f}/{best_score_sep[0][1]:.4f}, {best_score[1][0]:.4f}/{best_score_sep[1][1]:.4f}, The best: {global_best_score:.4f}, Time: {toc():.1f}")
+    print(f"Scores S1/S2, S1/S2: {best_score_sep[0][0]:.4f}/{best_score_sep[0][1]:.4f}, {best_score_sep[1][0]:.4f}/{best_score_sep[1][1]:.4f}, The best: {global_best_score:.4f}, Time: {toc():.1f}")
 
     return (best_score[0], best_score[1])
 
