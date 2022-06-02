@@ -167,8 +167,8 @@ def align(reference, sample, output):
     super_imposer.apply(sample_model.get_atoms())
 
     # print(super_imposer.rms)
-    if super_imposer.rms > 6.0:
-        raise Exception("Something is wrong with PDB alignment")
+    if super_imposer.rms > 20.0:     # could be as much as 8.6 for some Abs that don't fit CoV2
+        raise Exception(f"Something is wrong with PDB alignment - RMS is too high {super_imposer.rms}")
 
     # Save the aligned version of a pdb
     io = Bio.PDB.PDBIO()

@@ -26,10 +26,10 @@ from prody import parsePDB, writePDB
 
 
 ###################################
-# These are set thru arguments now
+# These are overwritten thru arguments now
 dla_threshold = 0.06
-mega_type = 1           # 0 - original, 1 - kir's, ...
-use_rosetta = 0
+mega_type = 1           # 0 - original, 1 - kir's mega, ...
+use_rosetta = 0         # 0 - use OpenMM, 1 - use rosetta. OpenMM seems better
 renumber = 0
 #############################3#####
 
@@ -42,9 +42,11 @@ aligned_over = "alignment.pdb"
 block_distance = 38.0 / 3   # Å
 
 
-# start point Ab and the max length of the Ab chains including spacers and paddings
-# TODO: use ANARCI to insert spacers to fasta
-starting_point = "7lm9-Fv.fasta"
+# start point Ab
+# use http://opig.stats.ox.ac.uk/webapps/newsabdab/sabpred/anarci/ to cut Fv region from a longer fasta sequence
+# TODO: automate cutting the Ab Fv
+# starting_point = "7lm9-Fv.fasta"
+starting_point = "7e3c-Fv.fasta"
 
 # we calc this as max len for now in main()
 chain_max_length = 0
@@ -56,8 +58,7 @@ ig_fold_pdb = "ig_fold.pdb"
 ig_fold_aligned_pdb = "ig_fold_aligned.pdb"
 
 # we split the sequence to cdr/framework regions. we won't  optimise on constant framework
-# TODO: automate cdr detection ??
-# all give different CDR breakdown!
+# automate cdr detection - all give different CDR breakdown!
 # http://dunbrack2.fccc.edu/PyIgClassify/User/UserPdb.aspx
 # http://cao.labshare.cn/AbRSA/download.php
 # https://github.com/mit-ll/Insilico_Ab_Variant_Generator/blob/main/scripts/parse_region.py
@@ -92,12 +93,7 @@ emb = Embed("esm1b_t33_650M_UR50S")
 #     "Y",
 # ]
 
-
-# TODO: learn better embedding with lower dimensions and smooth space. Perhaps 2-3 layer net?
-residue_embedding = np.eye(21, 21, dtype=int)
-
 global_best_score = 999.0
-
 
 # input arg: dict of Seq 'H', 'L'
 # len must be less than 1022 (ESM embedding limit)
@@ -178,10 +174,6 @@ def save_blocking_positions_pdb(pdb_file):
     ff_l.close()
 
 
-def fake_fitness(arg):
-    return random.random()
-
-
 # with containerised Rosetta or OpenMM refinement running in docker container
 def ig_fold_docker(thread_no: int, xx):
     HL = np2full_seq(xx)
@@ -231,6 +223,7 @@ def double_fun_igfold(X):
                  f"{mega_type}"],
                 capture_output=True, check=True)  # these paths are inside the container!
             best_score_sep[s,thread_no] = float(output.stdout.split()[-1])                          # TODO: perhaps there is a better way of combining scores
+
         best_score[thread_no] = np.sum(best_score_sep[:,thread_no]) / len(spike_list)               # ----
 
         # optionally copy the best pdb to save it
@@ -239,7 +232,7 @@ def double_fun_igfold(X):
             global_best_score = best_score[thread_no]
             movie_cnt += 1
 
-    print(f"Scores S1/S2, S1/S2: {best_score_sep[0][0]:.4f}/{best_score_sep[0][1]:.4f}, {best_score_sep[1][0]:.4f}/{best_score_sep[1][1]:.4f}, The best: {global_best_score:.4f}, Time: {toc():.1f}")
+    print(f"Scores S1/S2, S1/S2: {best_score_sep[0,0]:.4f}/{best_score_sep[1,0]:.4f}, {best_score_sep[0,1]:.4f}/{best_score_sep[1,1]:.4f}, The best: {global_best_score:.4f}, Time: {toc():.1f}")
 
     return (best_score[0], best_score[1])
 
@@ -300,7 +293,7 @@ if __name__ == '__main__':
                                   inopts={
                                       'ftarget': -5.0,
                                       'popsize': 18,        # must be even as we return pairs of target solutions
-                                      'maxiter': 28,
+                                      'maxiter': 21,
                                       'bounds': [-80., 80.],
                                       'verb_time': 0,
                                       'verb_disp': 500,
