@@ -34,7 +34,8 @@ renumber = 0
 #############################3#####
 
 # !!! we need to manually roughly align the spike over a typical Ab Fv. The chain must be renamed to "A" with rename.py
-spike_list = ["7e3c_spike_aligned.pdb", "7mem_spike_aligned.pdb"]
+# spike_list = ["7e3c_spike_aligned.pdb", "7mem_spike_aligned.pdb"]
+spike_list = ["7e3c_spike_aligned.pdb","7e3c_spike_aligned.pdb"]
 aligned_over = "alignment.pdb"
 
 # the max distance between the atom and the line from H-end and L-end is about 38Å
@@ -42,7 +43,7 @@ aligned_over = "alignment.pdb"
 block_distance = 38.0 / 3   # Å
 
 
-# start point Ab
+# start point Ab. The chains must be named H and L
 # use http://opig.stats.ox.ac.uk/webapps/newsabdab/sabpred/anarci/ to cut Fv region from a longer fasta sequence
 # TODO: automate cutting the Ab Fv
 # starting_point = "7lm9-Fv.fasta"
@@ -67,7 +68,9 @@ ig_fold_aligned_pdb = "ig_fold_aligned.pdb"
 
 
 # embedder class. keep global
-emb = Embed("esm1b_t33_650M_UR50S")
+# emb = Embed("esm1b_t33_650M_UR50S")
+emb = Embed("esm1v_t33_650M_UR90S_5")
+# emb = Embed("esm_msa1b_t12_100M_UR50S")     # transformers not supported!
 
 # residue_letters = [
 #     "-",  # spacer
@@ -97,6 +100,7 @@ global_best_score = 999.0
 
 # input arg: dict of Seq 'H', 'L'
 # len must be less than 1022 (ESM embedding limit)
+# TODO: Add some noise to embedding to make it less certain?
 def seq2np(seq_dict):
     return emb.embed(seq_dict)
 
@@ -243,7 +247,10 @@ def get_args():
         Ab optimiser.
         ''')
     parser = argparse.ArgumentParser(description=desc)
-    parser.add_argument("dla", type=float, default=0.06, help="""
+    parser.add_argument("--sigma", type=float, default=0.05, help="""
+        CMA-ES sigma.
+    """)
+    parser.add_argument("--dla", type=float, default=0.06, help="""
         DLA-Ranker thereshold.
     """)
     parser.add_argument("--mega", type=int, default=0, help="""
@@ -275,6 +282,7 @@ if __name__ == '__main__':
         print(f"Sequence length of {record.id}: {len(record)}")
 
     print("Adding spacers with ANARCI")
+    # it seems that adding spacers confuses much the encoding. So, we should either use moderate chema (e.g. Chothia) or no spacers at all??
     start_seq_spacers = insert_spacers(start_seq)
 
     if not os.path.exists("data"):
@@ -286,7 +294,7 @@ if __name__ == '__main__':
 
     plot_avg = []
     plot_min = []
-    sigma0 = 0.05  # initial standard deviation to sample new solutions - should be ~ 1/4 of range???
+    sigma0 = args.sigma  # initial standard deviation to sample new solutions - should be ~ 1/4 of range???
 
     # # cfun = cma.ConstrainedFitnessAL(fun, constraints)  # unconstrained function with adaptive Lagrange multipliers
     es = cma.CMAEvolutionStrategy(x0, sigma0,
@@ -315,12 +323,14 @@ if __name__ == '__main__':
         es.tell(X, V)
         # es.tell(X, [fun(x) for x in X])
 
-        # compare orig and current
-        sq1 = start_seq_spacers['H'] + ' ' + start_seq_spacers['L']
-        sq2 = np2seq_show(es.result.xfavorite)[0] + ' ' + np2seq_show(es.result.xfavorite)[1]
-        print(sq1)
-        print(sq2)
-        print(highlight_differences(sq1, sq2))
+        # compare orig and current. Make sure that the original FASTA has chains named H and L
+        sq1h = start_seq_spacers['H'] # + ' ' + start_seq_spacers['L']
+        sq2h = np2seq_show(es.result.xfavorite)[0] # + ' ' + np2seq_show(es.result.xfavorite)[1]
+        sq1l = start_seq_spacers['L']
+        sq2l = np2seq_show(es.result.xfavorite)[1]
+        print(sq1h + " " + sq1l)
+        print(sq2h + " " + sq2l)
+        print(highlight_differences(sq1h, sq2h) + " " + highlight_differences(sq1l, sq2l))
 
         es.logger.add()  # for later plotting
         es.disp()
