@@ -57,7 +57,7 @@ def save_blocking_positions_pdb(pdb_file):
 if __name__ == '__main__':
 
     dla_threshold = 0.05
-    mega_type = 0
+    mega_type = 1
 
     # -0.52415 (Vox size 1.0A) / -0.62479
     # RECEPTOR = "7e3c_Fv.pdb"
@@ -76,8 +76,8 @@ if __name__ == '__main__':
     # LIGAND = "7ps7_spike.pdb"
 
     # -0.44919 (Vox size 1.0A) / -0.73982 (Vox size 0.8A)
-    RECEPTOR = "7urs_Fv.pdb"
-    LIGAND = "7urs_spike.pdb"
+    # RECEPTOR = "7urs_Fv.pdb"
+    # LIGAND = "7urs_spike.pdb"
 
     # pdb errors on naccess
     # RECEPTOR = "2dd8_Fv.pdb"
