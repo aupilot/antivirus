@@ -35,7 +35,7 @@ renumber = 0
 
 # !!! we need to manually roughly align the spike over a typical Ab Fv. The chain must be renamed to "A" with rename.py
 # spike_list = ["7e3c_spike_aligned.pdb", "7mem_spike_aligned.pdb"]
-spike_list = ["7e3c_spike_aligned.pdb","7e3c_spike_aligned.pdb"]
+spike_list = ["7e3c_spike_aligned.pdb"]
 aligned_over = "alignment.pdb"
 
 # the max distance between the atom and the line from H-end and L-end is about 38Å
@@ -50,7 +50,7 @@ block_distance = 38.0 / 3   # Å
 starting_point = "7e3c-Fv.fasta"
 
 # we calc this as max len for now in main()
-chain_max_length = 0
+# chain_max_length = 0
 
 movie_cnt = 0
 
@@ -277,8 +277,8 @@ if __name__ == '__main__':
     start_seq = {}
     for record in SeqIO.parse(starting_point, "fasta"):
         start_seq[record.id] = record.seq
-        if len(record) > chain_max_length:
-            chain_max_length = len(record)
+        # if len(record) > chain_max_length:
+        #     chain_max_length = len(record)
         print(f"Sequence length of {record.id}: {len(record)}")
 
     print("Adding spacers with ANARCI")
@@ -291,6 +291,10 @@ if __name__ == '__main__':
     x0 = seq2np(start_seq_spacers).flatten()
 
     fun = double_fun_igfold
+
+    print("Embedding/de-embedding sample:")
+    print(highlight_differences(np2seq_show(x0)[0], str(start_seq['H'])))
+    print(highlight_differences(np2seq_show(x0)[1], str(start_seq['L'])))
 
     plot_avg = []
     plot_min = []

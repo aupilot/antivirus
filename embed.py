@@ -25,6 +25,7 @@ class Embed(object):
         # TODO: make sure that the meaning of '.' and '-' are correct
         # lets convert the alphabet to the latent space. We will need this to de-embed
         seq = {}
+        self.lengths = {}
         tmp = ''
         seq['alphabet'] = tmp.join(self.alphabet.unique_no_split_tokens)
         # seq['reversed'] = tmp.join(self.alphabet.unique_no_split_tokens)[::-1]
@@ -36,6 +37,13 @@ class Embed(object):
 
     # TODO: this will encode 2 chains. In future lets encode all candidates in one batch
     def embed(self, seqs):
+        # memorise lengths of chains
+        for key, val in sorted(seqs.items()):
+            val = str(val)
+            for rep in self.alphabet.unique_no_split_tokens:
+                val = str.replace(val, rep, '$')
+            self.lengths[key] = len(val)
+
         dataset = SeqDataset.from_seqs(seqs)
         batches = dataset.get_batch_indices(4096, extra_toks_per_seq=1)
         data_loader = torch.utils.data.DataLoader(
@@ -62,20 +70,23 @@ class Embed(object):
         for k, chain in zip([0,1], ['H','L']):
             tmp = []
 
-            # we skip the first letter ad it is always <pad> or <cls>
-            for i in range(1, eee_shaped.shape[1]):
+            # we skip the first letter as it is always <pad> or <cls>. We also use memorised lengths as otherwise it will be aligned to max chain length
+            for i in range(1, self.lengths[chain]+1):
+            # for i in range(1, eee_shaped.shape[1]):
                 dists = []
                 for a in self.latent_alphabet:
                     dists.append(np.linalg.norm(a-eee_shaped[k,i,:]))
                 match = np.argmin(dists)
                 # print(f"{self.alphabet.unique_no_split_tokens[match]}", end='')
-                if match < 2:  # <pad> == 1 indicated the end (and sometimes start). So break on <cls> or <pad>
+                if match < 2:  # <pad> == 1 indicated the end (and sometimes start). So break on <cls> or <pad> # never got here
                     break
                 # skip all other system tokens
                 if match < 4:
                     continue
                 if match > 30:
                     continue
+                if match == '<eos>':
+                    break  # never got here. Same with '.'
                 # we don't allow extra residues such as X B U Z O. Also WTF is "."? Replace with all '-'
                 if match >= 24 and match <= 29:
                     tmp.append('-')
@@ -101,7 +112,10 @@ class SeqDataset(FastaBatchedDataset):
         # we wanted top keep the order
         for key, val in sorted(seqs.items()):
             sequence_labels.append(key)
-            sequence_strs.append(val)
+            # sequence_strs.append(val)
+            sequence_strs.append(str(val) + ".")          # convert to strings because we have to use different dictionary - compatible with ESM
+            # the below does not work. Insted we need to memorise the length of the chains in embed(). Not ideal...
+            # sequence_strs.append(val + "<cls>")  # we adding the "eos" to help the embedding limit the sequence
         assert len(set(sequence_labels)) == len(
             sequence_labels
         ), "Found duplicate sequence labels"
