@@ -20,10 +20,14 @@ out_file = sys.argv[2]
 #pdbl.retrieve_pdb_file(infile[0], pdir=infile[1], file_format="pdb")
 structure = parser.get_structure('kir', inp_file)
 
+# renames = {
+#     "B": "H",
+#     "C": "L",
+# }
 renames = {
     "A": "H",
     "B": "L",
-    "C": "A"
+    "E": "A"
 }
 
 for model in structure:

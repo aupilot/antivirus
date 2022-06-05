@@ -58,11 +58,11 @@ def megadock(receptor=None, legand=None, mega_type=0):
 
     if mega_type == 0:
         # using the original MEGADOCK
-        output = subprocess.run(["/opt/megadock-4.1.1/megadock-gpu","-R", tmp_name_L, "-L", legand, "-r 3600", "-v 1.0", "-o", "/opt/var/dock.out" ], capture_output=False, check=True)
+        output = subprocess.run(["/opt/megadock-4.1.1/megadock-gpu","-R", tmp_name_L, "-L", legand, "-r 3600", "-v 0.8", "-o", "/opt/var/dock.out" ], capture_output=False, check=True)
         output = subprocess.run(["/opt/megadock-4.1.1/mega-post.sh", receptor, legand], capture_output=False, check=True)
     elif mega_type == 1:
         # use Kir optimised MEGADOCK
-        output = subprocess.run(["/opt/megadock-kir/megadock-gpu","-R", tmp_name_L, "-L", legand, "-r 2600", "-v 1.0", "-o", "/opt/var/dock.out" ], capture_output=False, check=True)
+        output = subprocess.run(["/opt/megadock-kir/megadock-gpu","-R", tmp_name_L, "-L", legand, "-r 2600", "-v 0.8", "-o", "/opt/var/dock.out" ], capture_output=False, check=True)
         output = subprocess.run(["/opt/megadock-kir/mega-post.sh", receptor, legand], capture_output=False, check=True)
 
     else:
