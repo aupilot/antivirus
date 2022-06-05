@@ -216,7 +216,8 @@ def double_fun_igfold(X):
         pool.starmap(ig_fold_docker, zip(thread_numbers, X))
 
     ##### the following must run in sequence! Perhaps unless a better computer
-    best_score_sep = np.zeros((len(thread_numbers), len(spike_list)))
+    lspl = len(spike_list)
+    best_score_sep = np.zeros((lspl, len(thread_numbers)))
     best_score = [0.,0.]
     for thread_no in thread_numbers:
         # run docking/score for all spikes in the list
@@ -228,7 +229,7 @@ def double_fun_igfold(X):
                 capture_output=True, check=True)  # these paths are inside the container!
             best_score_sep[s,thread_no] = float(output.stdout.split()[-1])                          # TODO: perhaps there is a better way of combining scores
 
-        best_score[thread_no] = np.sum(best_score_sep[:,thread_no]) / len(spike_list)               # ----
+        best_score[thread_no] = np.sum(best_score_sep[:,thread_no]) / lspl                          # ----
 
         # optionally copy the best pdb to save it
         if best_score[thread_no] < global_best_score:
@@ -236,9 +237,11 @@ def double_fun_igfold(X):
             global_best_score = best_score[thread_no]
             movie_cnt += 1
 
-    print(f"Scores S1/S2, S1/S2: {best_score_sep[0,0]:.4f}/{best_score_sep[1,0]:.4f}, {best_score_sep[0,1]:.4f}/{best_score_sep[1,1]:.4f}, The best: {global_best_score:.4f}, Time: {toc():.1f}")
+    for i in range(lspl):
+        print(f"Target {i}: {best_score_sep[i,0]:.3f} {best_score_sep[i,1]:.3f}")
+    print(f"The best: {global_best_score:.3f}, Time: {toc():.1f}")
 
-    return (best_score[0], best_score[1])
+    return best_score[0], best_score[1]
 
 
 def get_args():
@@ -333,7 +336,7 @@ if __name__ == '__main__':
         sq1l = start_seq_spacers['L']
         sq2l = np2seq_show(es.result.xfavorite)[1]
         print(sq1h + " " + sq1l)
-        print(sq2h + " " + sq2l)
+        # print(sq2h + " " + sq2l)
         print(highlight_differences(sq1h, sq2h) + " " + highlight_differences(sq1l, sq2l))
 
         es.logger.add()  # for later plotting
