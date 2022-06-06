@@ -86,18 +86,22 @@ native = lambda text: f"\033[m{text}"
 
 def highlight_differences(old, new):
     result = ""
+    changes = 0
     codes = difflib.SequenceMatcher(a=old, b=new).get_opcodes()
     for code in codes:
         if code[0] == "equal":
             result += native(old[code[1]:code[2]])
         elif code[0] == "delete":
             result += red(old[code[1]:code[2]])
+            changes += 1
         elif code[0] == "insert":
             result += green(new[code[3]:code[4]])
+            changes += 1
         elif code[0] == "replace":
             result += blue(new[code[3]:code[4]])
+            changes += 1
 
-    return result
+    return result, changes
 
 
 

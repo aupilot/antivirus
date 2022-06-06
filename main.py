@@ -296,8 +296,10 @@ if __name__ == '__main__':
     fun = double_fun_igfold
 
     print("Embedding/de-embedding sample:")
-    print(highlight_differences(np2seq_show(x0)[0], str(start_seq['H'])))
-    print(highlight_differences(np2seq_show(x0)[1], str(start_seq['L'])))
+    highligted, changes = highlight_differences(str(start_seq['H']), np2seq_show(x0)[0])
+    print(f"H ({changes:02d}): {highligted}")
+    highligted, changes = highlight_differences(str(start_seq['L']), np2seq_show(x0)[1])
+    print(f"L ({changes:02d}): {highligted}")
 
     plot_avg = []
     plot_min = []
@@ -337,10 +339,13 @@ if __name__ == '__main__':
         sq2l = np2seq_show(es.result.xfavorite)[1]
         print(sq1h + " " + sq1l)
         # print(sq2h + " " + sq2l)
-        print(highlight_differences(sq1h, sq2h) + " " + highlight_differences(sq1l, sq2l))
+        highligted_h, changes_h = highlight_differences(sq1h, sq2h)
+        highligted_l, changes_l = highlight_differences(sq1l, sq2l)
+        print(f"{highligted_h} {highligted_l} Diff: {changes_h}+{changes_l}" )
 
         es.logger.add()  # for later plotting
         es.disp()
+        es.plot()
 
     es.result_pretty()
     # === es.result explanations: https://github.com/CMA-ES/pycma/blob/9b4eb5450c020ac99d637780a42c39788f1e1045/cma/evolution_strategy.py#L977
@@ -359,8 +364,9 @@ if __name__ == '__main__':
     print(time.asctime())
 
     plot = np.array([plot_avg, plot_min]).T
+
     matplotlib.pyplot.plot(plot)
     matplotlib.pyplot.show(block=True)
 
-    es.plot()
-    matplotlib.pyplot.show(block=True)
+    # es.plot()
+    # matplotlib.pyplot.show(block=True)

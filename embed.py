@@ -3,6 +3,7 @@ from Bio.Seq import Seq
 import torch
 # pip install fair-esm
 from esm import Alphabet, FastaBatchedDataset, ProteinBertModel, pretrained, MSATransformer
+from scipy.spatial import distance
 
 # inspired by examples from
 # https://github.com/facebookresearch/esm
@@ -75,7 +76,11 @@ class Embed(object):
             # for i in range(1, eee_shaped.shape[1]):
                 dists = []
                 for a in self.latent_alphabet:
-                    dists.append(np.linalg.norm(a-eee_shaped[k,i,:]))
+                    # euq distance
+                    # dists.append(np.linalg.norm(a-eee_shaped[k, i, :]))
+                    # cosine distance
+                    dists.append(distance.cosine(a, eee_shaped[k, i, :]))
+
                 match = np.argmin(dists)
                 # print(f"{self.alphabet.unique_no_split_tokens[match]}", end='')
                 if match < 2:  # <pad> == 1 indicated the end (and sometimes start). So break on <cls> or <pad> # never got here
