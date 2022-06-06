@@ -27,7 +27,7 @@ from prody import parsePDB, writePDB
 
 ###################################
 # These are overwritten thru arguments now
-dla_threshold = 0.06
+dla_threshold = 0.045
 mega_type = 1           # 0 - original, 1 - kir's mega, ...
 use_rosetta = 0         # 0 - use OpenMM, 1 - use rosetta. OpenMM seems better
 renumber = 0
@@ -46,8 +46,8 @@ block_distance = 38.0 / 3   # Å
 # start point Ab. The chains must be named H and L
 # use http://opig.stats.ox.ac.uk/webapps/newsabdab/sabpred/anarci/ to cut Fv region from a longer fasta sequence
 # TODO: automate cutting the Ab Fv
-# starting_point = "7lm9-Fv.fasta"
-starting_point = "7e3c-Fv.fasta"
+starting_point = "7urs-Fv.fasta"
+# starting_point = "7e3c-Fv.fasta"
 
 # we calc this as max len for now in main()
 # chain_max_length = 0

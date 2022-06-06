@@ -27,7 +27,7 @@ structure = parser.get_structure('kir', inp_file)
 renames = {
     "A": "H",
     "B": "L",
-    "E": "A"
+    "S": "A"
 }
 
 for model in structure:

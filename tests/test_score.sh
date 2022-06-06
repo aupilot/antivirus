@@ -17,7 +17,19 @@
 #obabel 6zer_spike.pdb -O /tmp/ligand.pdbqt -p 7.4
 
 #-2.54717
-obabel 2dd8_Fv.pdb -xr -O /tmp/receptor.pdbqt -p 7.4
-obabel 2dd8_spike.pdb -O /tmp/ligand.pdbqt -p 7.4
+#obabel 2dd8_Fv.pdb -xr -O /tmp/receptor.pdbqt -p 7.4
+#obabel 2dd8_spike.pdb -O /tmp/ligand.pdbqt -p 7.4
+
+#-0.93759 (kcal/mol)
+#obabel 6yla_Fv.pdb -xr -O /tmp/receptor.pdbqt -p 7.4
+#obabel 6yla_spike.pdb -O /tmp/ligand.pdbqt -p 7.4
+
+# -0.91550 (kcal/mol)
+#obabel 4xak_Fv.pdb -xr -O /tmp/receptor.pdbqt -p 7.4
+#obabel 4xak_spike.pdb -O /tmp/ligand.pdbqt -p 7.4
+
+# -0.69870
+obabel 6c6z_Fv.pdb -xr -O /tmp/receptor.pdbqt -p 7.4
+obabel 6c6z_spike.pdb -O /tmp/ligand.pdbqt -p 7.4
 
 vina --receptor /tmp/receptor.pdbqt --ligand /tmp/ligand.pdbqt  --score_only
