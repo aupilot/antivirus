@@ -1,6 +1,5 @@
 import argparse
 import os
-import random
 import subprocess
 import time
 from multiprocessing import Pool
@@ -16,12 +15,13 @@ from numpy.linalg import norm
 
 from embed import Embed
 from helper import highlight_differences, insert_spacers, align
-
-matplotlib.use('TKAgg')
 from ttictoc import tic, toc
-# from igfold import IgFoldRunner, init_pyrosetta
-# from igfold import IgFoldRunner
-from prody import parsePDB, writePDB
+# from prody import parsePDB, writePDB
+
+try:
+    matplotlib.use('TKAgg')
+except:
+    print("Headless mode")
 
 
 
@@ -35,7 +35,7 @@ renumber = 0
 
 # !!! we need to manually roughly align the spike over a typical Ab Fv. The chain must be renamed to "A" with rename.py
 # spike_list = ["7e3c_spike_aligned.pdb", "7mem_spike_aligned.pdb"]
-spike_list = ["7e3c_spike_aligned.pdb"]
+spike_list = ["7urs_spike.pdb"]
 aligned_over = "alignment.pdb"
 
 # the max distance between the atom and the line from H-end and L-end is about 38Å
@@ -69,7 +69,7 @@ ig_fold_aligned_pdb = "ig_fold_aligned.pdb"
 
 # embedder class. keep global
 # emb = Embed("esm1b_t33_650M_UR50S")
-emb = Embed("esm1v_t33_650M_UR90S_5")
+emb = Embed("esm1v_t33_650M_UR90S_1")
 # emb = Embed("esm_msa1b_t12_100M_UR50S")     # transformers not supported!
 
 # residue_letters = [
@@ -345,7 +345,7 @@ if __name__ == '__main__':
 
         es.logger.add()  # for later plotting
         es.disp()
-        es.plot()
+        # es.plot()
 
     es.result_pretty()
     # === es.result explanations: https://github.com/CMA-ES/pycma/blob/9b4eb5450c020ac99d637780a42c39788f1e1045/cma/evolution_strategy.py#L977
@@ -364,6 +364,7 @@ if __name__ == '__main__':
     print(time.asctime())
 
     plot = np.array([plot_avg, plot_min]).T
+    np.savetxt("plot.csv", plot, delimiter=",")
 
     matplotlib.pyplot.plot(plot)
     matplotlib.pyplot.show(block=True)

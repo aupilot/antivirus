@@ -1,7 +1,7 @@
 import subprocess
 import time
 from multiprocessing import Pool
-from prody import parsePDB, writePDB
+# from prody import parsePDB, writePDB
 from ttictoc import tic, toc
 from Bio.Seq import Seq
 import Bio.PDB

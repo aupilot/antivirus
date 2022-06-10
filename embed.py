@@ -38,7 +38,7 @@ class Embed(object):
 
     # TODO: this will encode 2 chains. In future lets encode all candidates in one batch
     def embed(self, seqs):
-        # memorise lengths of chains
+        # memorise the lengths of chains
         for key, val in sorted(seqs.items()):
             val = str(val)
             for rep in self.alphabet.unique_no_split_tokens:
@@ -53,11 +53,8 @@ class Embed(object):
 
         with torch.no_grad():
             for batch_idx, (labels, strs, toks) in enumerate(data_loader):
-                print(
-                    f"Processing {batch_idx + 1} of {len(batches)} batches ({toks.size(0)} sequences)"
-                )
-
-                out = self.model(toks, repr_layers=[0], return_contacts=False)
+                print(f"Processing {batch_idx + 1} of {len(batches)} batches ({toks.size(0)} sequences)")
+                out = self.model(toks, repr_layers=[], return_contacts=False)
                 logits = out["logits"].cpu().numpy()
 
         return logits
@@ -118,7 +115,11 @@ class SeqDataset(FastaBatchedDataset):
         for key, val in sorted(seqs.items()):
             sequence_labels.append(key)
             # sequence_strs.append(val)
-            sequence_strs.append(str(val) + ".")          # convert to strings because we have to use different dictionary - compatible with ESM
+            seq_str = str(val)
+            # for some reason the "-" or any other symbol does not encode spacers... too bad
+            # if key == "H" or key == "L":
+            #     seq_str = seq_str.replace("-", ".")
+            sequence_strs.append(seq_str + ".")          # convert to strings because we have to use different dictionary - compatible with ESM
             # the below does not work. Insted we need to memorise the length of the chains in embed(). Not ideal...
             # sequence_strs.append(val + "<cls>")  # we adding the "eos" to help the embedding limit the sequence
         assert len(set(sequence_labels)) == len(
