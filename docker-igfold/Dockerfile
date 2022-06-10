@@ -1,4 +1,5 @@
-FROM nvidia/cuda:11.4.1-devel-ubuntu20.04
+FROM nvidia/cuda:11.3.1-cudnn8-devel-ubuntu20.04
+#FROM nvidia/cuda:11.4.1-devel-ubuntu20.04
 
 RUN apt-key del 7fa2af80 && \
     apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/3bf863cc.pub && \
@@ -19,7 +20,8 @@ RUN wget https://github.com/Kitware/CMake/releases/download/v3.23.1/cmake-3.23.1
     make -j8 && \
     make install
 
-RUN pip install numpy Cython
+RUN pip install numpy Cython && \
+    pip install torch --extra-index-url https://download.pytorch.org/whl/cu113
 
 WORKDIR /opt
 RUN git clone https://github.com/openmm/openmm.git && \
@@ -27,7 +29,7 @@ RUN git clone https://github.com/openmm/openmm.git && \
     git checkout 7.6.0 && \
     mkdir build && \
     cd build  && \
-    cmake .. && \
+    cmake .. -DOPENMM_BUILD_CUDA_DOUBLE_PRECISION_TESTS=OFF && \
     make -j8 && \
     make install && \
     make PythonInstall
@@ -35,8 +37,7 @@ RUN git clone https://github.com/openmm/openmm.git && \
 RUN python3 -m pip install --upgrade pip && \
     pip install protobuf==3.9.2
 
-RUN pip install torch --extra-index-url https://download.pytorch.org/whl/cu113 && \
-    pip install igfold
+RUN pip install igfold
 
 WORKDIR /opt
 RUN git clone https://github.com/openmm/pdbfixer.git  && \
@@ -51,7 +52,7 @@ RUN tar --strip-components=1 -xzf IgFold.tar.gz && \
 
 RUN pip cache purge && \
     apt-get clean && \
-    rm -Rf /opt/cmake-3.23.1 && \
-    rm -Rf /opt/openmm
+    rm -Rf /opt/cmake-3.23.1
+#    rm -Rf /opt/openmm
 
 COPY ig_fold.py /opt/IgFold/ig_fold.py

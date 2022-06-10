@@ -6,6 +6,8 @@ from ttictoc import tic, toc
 from Bio.Seq import Seq
 import Bio.PDB
 import difflib
+from colorama import init, Fore
+
 
 ig_fold_pdb = "ig_fold.pdb"
 
@@ -72,37 +74,25 @@ def fold_n_score2(sequences, spike, mega_type=0, dla_threshold=0.06, rosetta=0, 
 
 
 # highligh differences in color
-
-# red = lambda text: f"\033[38;2;255;0;0m{text}\033[38;2;255;255;255m"
-# green = lambda text: f"\033[38;2;0;255;0m{text}\033[38;2;255;255;255m"
-# blue = lambda text: f"\033[38;2;0;0;255m{text}\033[38;2;255;255;255m"
-# white = lambda text: f"\033[38;2;255;255;255m{text}\033[38;2;255;255;255m"
-
-red = lambda text: f"\033[38;2;255;0;0m{text}\033[m"
-green = lambda text: f"\033[38;2;0;255;0m{text}\033[m"
-blue = lambda text: f"\033[38;2;0;0;255m{text}\033[m"
-white = lambda text: f"\033[38;2;255;255;255m{text}\033[m"
-native = lambda text: f"\033[m{text}"
-
+init(wrap=False)
 def highlight_differences(old, new):
     result = ""
     changes = 0
     codes = difflib.SequenceMatcher(a=old, b=new).get_opcodes()
     for code in codes:
         if code[0] == "equal":
-            result += native(old[code[1]:code[2]])
+            result += old[code[1]:code[2]]
         elif code[0] == "delete":
-            result += red(old[code[1]:code[2]])
+            result += Fore.RED + old[code[1]:code[2]] + Fore.RESET
             changes += 1
         elif code[0] == "insert":
-            result += green(new[code[3]:code[4]])
+            result += Fore.GREEN + new[code[3]:code[4]] + Fore.RESET
             changes += 1
         elif code[0] == "replace":
-            result += blue(new[code[3]:code[4]])
+            result += Fore.BLUE + new[code[3]:code[4]] +  Fore.RESET
             changes += 1
 
     return result, changes
-
 
 
 def insert_spacers(sequences):
@@ -160,7 +150,7 @@ print(highlight_differences(np2seq_show(x0)[0], str(start_seq['H'])))
     return new_sequences
 
 
-# read sample pdb file, align agaist the reference and save to output
+# read a sample pdb file, align (rotate) against the reference pdb and save to output
 def align(reference, sample, output):
     # Select what residues we wish to align. Ideally, we need to renumber?
     start_id = 1
@@ -208,4 +198,3 @@ def align(reference, sample, output):
     io = Bio.PDB.PDBIO()
     io.set_structure(sample_structure)
     io.save(output)
-

@@ -1,9 +1,12 @@
+000
 7e3c-Fv.fasta
 esm1v_t33_650M_UR90S_5
 'popsize': 12,
 'maxiter': 31,
+--sigma=0.5 --dla=0.045 --mega=1
 -0.68662
 
+000
 7e3c-Fv.fasta
 esm1v_t33_650M_UR90S_5
 'popsize': 18,
@@ -47,6 +50,13 @@ esm1v_t33_650M_UR90S_5
 sigma 1.0
 -0.59776
 
+006
+--sigma=0.5 --dla=0.06
+-0.64767
+
+
+
+
 ======================================
 1. Testng different encodings:
 
@@ -84,5 +94,4 @@ mine: encoding with esm1v_t33_650M_UR90S_1
 
 kir1 starting from 2dd8!
 
-kir2: dla = 0.06 vs 0.045
---sigma=0.5 --dla=0.06
+
