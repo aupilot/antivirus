@@ -212,6 +212,7 @@ def double_fun_igfold(X):
 
     ##### these 2 calls can be run in parallel
     thread_numbers = (0, 1)
+    # TODO: ocasionally we can get the sequence cut short. We need to avoid calling if_fold_docker in this cases as it will crash.
     with Pool(2) as pool:
         pool.starmap(ig_fold_docker, zip(thread_numbers, X))
 
@@ -252,6 +253,12 @@ def get_args():
     parser = argparse.ArgumentParser(description=desc)
     parser.add_argument("--sigma", type=float, default=0.05, help="""
         CMA-ES sigma.
+    """)
+    parser.add_argument("--popsize", type=int, default=18, help="""
+        DLA-Ranker thereshold.
+    """)
+    parser.add_argument("--maxiter", type=int, default=21, help="""
+        DLA-Ranker thereshold.
     """)
     parser.add_argument("--dla", type=float, default=0.06, help="""
         DLA-Ranker thereshold.
@@ -309,8 +316,8 @@ if __name__ == '__main__':
     es = cma.CMAEvolutionStrategy(x0, sigma0,
                                   inopts={
                                       'ftarget': -5.0,
-                                      'popsize': 18,        # must be even as we return pairs of target solutions
-                                      'maxiter': 21,
+                                      'popsize': args.popsize,        # must be even as we return pairs of target solutions
+                                      'maxiter': args.maxiter,
                                       'bounds': [-80., 80.],
                                       'verb_time': 0,
                                       'verb_disp': 500,

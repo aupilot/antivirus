@@ -77,7 +77,7 @@ esm1v_t33_650M_UR90S_4
 -0.48246
 ---------------------------
 esm1v_t33_650M_UR90S_1
-xxx
+crashed because it's truncated generated sequence WTF?
 
 
 
@@ -92,6 +92,13 @@ xxx
 mine: encoding with esm1v_t33_650M_UR90S_1
 
 
-kir1 starting from 2dd8!
+kir1 starting from 2dd8! 41 iteration
+-0.6932
 
 
+
+
+================================
+идеи
+re-implementation of trRossetta for folding. Also another embedding
+https://github.com/songlab-cal/tape

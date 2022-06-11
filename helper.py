@@ -146,7 +146,7 @@ print(highlight_differences(np2seq_show(x0)[0], str(start_seq['H'])))
             if line[0] == '/':
                 break
         new_sequences[key] = Seq(new_str_seq)
-        print(new_str_seq)
+        print("        " + new_str_seq)
     return new_sequences
 
 

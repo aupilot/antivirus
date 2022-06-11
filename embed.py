@@ -87,8 +87,8 @@ class Embed(object):
                     continue
                 if match > 30:
                     continue
-                if match == '<eos>':
-                    break  # never got here. Same with '.'
+                # if match == '<eos>':
+                #     break  # never got here. Same with '.'
                 # we don't allow extra residues such as X B U Z O. Also WTF is "."? Replace with all '-'
                 if match >= 24 and match <= 29:
                     tmp.append('-')
