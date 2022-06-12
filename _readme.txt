@@ -55,7 +55,14 @@ sigma 1.0
 -0.64767
 
 
-
+=====================================
+starting from 2dd8 -- 41 iteration
+2dd8-Fv.fasta
+esm1v_t33_650M_UR90S_5
+'popsize': 18,
+'maxiter': 21,
+sigma 0.5
+-0.6932
 
 ======================================
 1. Testng different encodings:
@@ -78,7 +85,9 @@ esm1v_t33_650M_UR90S_4
 ---------------------------
 esm1v_t33_650M_UR90S_1
 crashed because it's truncated generated sequence WTF?
-
+---------------------------
+esm1v_t33_650M_UR90S_2
+crashed because it's truncated generated sequence WTF?
 
 
 
@@ -89,11 +98,9 @@ crashed because it's truncated generated sequence WTF?
 
 текущие:
 
-mine: encoding with esm1v_t33_650M_UR90S_1
+mine: encoding with esm1v_t33_650M_UR90S_5 - confirm that no bugs??
 
-
-kir1 starting from 2dd8! 41 iteration
--0.6932
+kir1 starting from 2dd8! 81 iteration
 
 
 

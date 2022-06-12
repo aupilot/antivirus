@@ -145,6 +145,7 @@ def vina_score():
             shutil.copy(good_decoys+dec, f"{save_best}dec_{-affinity:.2f}.pdb")
 
     if len(scores) == 0:
+        print("No valid decoys generated, nothing to score")
         return 10.0
     else:
         return np.min(np.array(scores))
