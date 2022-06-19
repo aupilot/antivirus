@@ -1,0 +1,436 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="fda49921-6ecf-410e-8a36-dd66d5c62c59" name="Changes" comment="onion embed - WIP">
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="DockerExecCommands">
+    <ExecCommand>
+      <option name="command" value="/bin/bash" />
+    </ExecCommand>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Merge.Settings">
+    <option name="BRANCH" value="double_epitope" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="double_epitope" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitSEFilterConfiguration">
+    <file-type-list>
+      <filtered-out-file-type name="LOCAL_BRANCH" />
+      <filtered-out-file-type name="REMOTE_BRANCH" />
+      <filtered-out-file-type name="TAG" />
+      <filtered-out-file-type name="COMMIT_BY_MESSAGE" />
+    </file-type-list>
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/helper.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/embed.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/main.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/align.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/run_score.sh" root0="FORCE_HIGHLIGHTING" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectId" id="28rVsBUOY0z7WKspwWdbyFOvFes" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/docker-docknscore" />
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PythonContentEntriesConfigurable" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/docker-docknscore" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/docker-docknscore" />
+      <recent name="$PROJECT_DIR$/docker-igfold" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Python.main">
+    <configuration name="align" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="Antivirus" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/align.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="main" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="Antivirus" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/main.py" />
+      <option name="PARAMETERS" value="--dla=0.045 --popsize=18 --maxiter=25 --mega=1 --rosetta=0 --renum=0" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="test_covabdab" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="Antivirus" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/test_covabdab.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Docker Image (1)" type="docker-deploy" factoryName="docker-image" temporary="true" server-name="Docker">
+      <deployment type="docker-image">
+        <settings>
+          <option name="imageTag" value="8kir8/molecule:0605.1" />
+          <option name="containerName" value="" />
+        </settings>
+      </deployment>
+      <method v="2" />
+    </configuration>
+    <configuration name="docker-anarci/Dockerfile" type="docker-deploy" factoryName="dockerfile" temporary="true" server-name="Docker">
+      <deployment type="dockerfile">
+        <settings>
+          <option name="imageTag" value="8kir8/anarci:220524.1" />
+          <option name="containerName" value="" />
+          <option name="sourceFilePath" value="docker-anarci/Dockerfile" />
+        </settings>
+      </deployment>
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="Docker.Docker Image (1)" />
+      <item itemvalue="Docker.docker-anarci/Dockerfile" />
+      <item itemvalue="Python.main" />
+      <item itemvalue="Python.test_covabdab" />
+      <item itemvalue="Python.align" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.main" />
+        <item itemvalue="Python.align" />
+        <item itemvalue="Python.test_covabdab" />
+        <item itemvalue="Docker.docker-anarci/Dockerfile" />
+        <item itemvalue="Docker.Docker Image (1)" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="fda49921-6ecf-410e-8a36-dd66d5c62c59" name="Changes" comment="" />
+      <created>1651974896132</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1651974896132</updated>
+    </task>
+    <task id="LOCAL-00001" summary="now the blocked residues are marked automatically">
+      <created>1653100974733</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1653100974733</updated>
+    </task>
+    <task id="LOCAL-00002" summary="Using facebook embedding instead of one-hot">
+      <created>1653208188152</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1653208188152</updated>
+    </task>
+    <task id="LOCAL-00003" summary="small fixes">
+      <created>1653209927262</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1653209927262</updated>
+    </task>
+    <task id="LOCAL-00004" summary="fixed crash on &quot;.&quot; appearance in sequence">
+      <created>1653304631485</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1653304631485</updated>
+    </task>
+    <task id="LOCAL-00005" summary="Adding spacers with ANARCI">
+      <created>1653395979260</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1653395979261</updated>
+    </task>
+    <task id="LOCAL-00006" summary="Added rotation of generated with IgF models to match a standard position. The IgFold generates Abs with random orientation">
+      <created>1653469384366</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1653469384366</updated>
+    </task>
+    <task id="LOCAL-00007" summary="updated dock-n-score - now it saves best decoys">
+      <created>1653566290721</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1653566290721</updated>
+    </task>
+    <task id="LOCAL-00008" summary="nc">
+      <created>1653987810525</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1653987810525</updated>
+    </task>
+    <task id="LOCAL-00009" summary="scoring script wrapped in &quot;for&quot;">
+      <created>1653990637566</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1653990637566</updated>
+    </task>
+    <task id="LOCAL-00010" summary="dockes to a list of epitopes and calc average score">
+      <created>1653993231407</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1653993231407</updated>
+    </task>
+    <task id="LOCAL-00011" summary="updated debug output and 7e3c aligned">
+      <created>1654075194789</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1654075194789</updated>
+    </task>
+    <task id="LOCAL-00012" summary="bug in print line fixed">
+      <created>1654075633862</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1654075633862</updated>
+    </task>
+    <task id="LOCAL-00013" summary="increased alignment RMS">
+      <created>1654168160020</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1654168160020</updated>
+    </task>
+    <task id="LOCAL-00014" summary="Embedder - net changed to newer and ANARCI changed to Chothia">
+      <created>1654317129837</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1654317129837</updated>
+    </task>
+    <task id="LOCAL-00015" summary="fixed: the chain lengths were aligned to max len. So, the shortest was padded with some random shit. Also, there was one extra residue at the end.">
+      <created>1654391518913</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1654391518913</updated>
+    </task>
+    <task id="LOCAL-00016" summary="one item in the list of epitiopes now works">
+      <created>1654423375213</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1654423375213</updated>
+    </task>
+    <task id="LOCAL-00017" summary="tests to check dock/score on native complexes added">
+      <created>1654423401978</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1654423401978</updated>
+    </task>
+    <task id="LOCAL-00018" summary="megadock voxel size reduced to 0.8A (in docker)">
+      <created>1654424839843</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1654424839843</updated>
+    </task>
+    <task id="LOCAL-00019" summary="tests updated">
+      <created>1654481336858</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1654481336858</updated>
+    </task>
+    <task id="LOCAL-00020" summary="De-embed: euqlidian distance replaces with cosine distance">
+      <created>1654497250892</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1654497250892</updated>
+    </task>
+    <task id="LOCAL-00021" summary="Dockerfile created for IgFold and run_igfold updated accordingly.">
+      <created>1654856095739</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1654856095739</updated>
+    </task>
+    <task id="LOCAL-00022" summary="Dockerfile updated but still slower than the old igfold image">
+      <created>1654904087755</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1654904087755</updated>
+    </task>
+    <task id="LOCAL-00023" summary="Dockerfile fixed: the weight downloaded every time it runs">
+      <created>1654915817892</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1654915817892</updated>
+    </task>
+    <task id="LOCAL-00024" summary="popsize and maxiter now are parameters">
+      <created>1654925447712</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1654925447712</updated>
+    </task>
+    <task id="LOCAL-00025" summary="7urs fasta added">
+      <created>1654925750456</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1654925750456</updated>
+    </task>
+    <task id="LOCAL-00026" summary="cn">
+      <created>1654928748187</created>
+      <option name="number" value="00026" />
+      <option name="presentableId" value="LOCAL-00026" />
+      <option name="project" value="LOCAL" />
+      <updated>1654928748187</updated>
+    </task>
+    <task id="LOCAL-00027" summary="all docker containers converted to proper dockerfile">
+      <created>1655032151769</created>
+      <option name="number" value="00027" />
+      <option name="presentableId" value="LOCAL-00027" />
+      <option name="project" value="LOCAL" />
+      <updated>1655032151769</updated>
+    </task>
+    <task id="LOCAL-00028" summary="onion embed - WIP">
+      <created>1655598824064</created>
+      <option name="number" value="00028" />
+      <option name="presentableId" value="LOCAL-00028" />
+      <option name="project" value="LOCAL" />
+      <updated>1655598824064</updated>
+    </task>
+    <option name="localTasksCounter" value="29" />
+    <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="double_epitope" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="fixed crash on &quot;.&quot; appearance in sequence" />
+    <MESSAGE value="Adding spacers with ANARCI" />
+    <MESSAGE value="Added rotation of generated with IgF models to match a standard position. The IgFold generates Abs with random orientation" />
+    <MESSAGE value="updated dock-n-score - now it saves best decoys" />
+    <MESSAGE value="nc" />
+    <MESSAGE value="scoring script wrapped in &quot;for&quot;" />
+    <MESSAGE value="dockes to a list of epitopes and calc average score" />
+    <MESSAGE value="updated debug output and 7e3c aligned" />
+    <MESSAGE value="bug in print line fixed" />
+    <MESSAGE value="increased alignment RMS" />
+    <MESSAGE value="Embedder - net changed to newer and ANARCI changed to Chothia" />
+    <MESSAGE value="fixed: the chain lengths were aligned to max len. So, the shortest was padded with some random shit. Also, there was one extra residue at the end." />
+    <MESSAGE value="one item in the list of epitiopes now works" />
+    <MESSAGE value="tests to check dock/score on native complexes added" />
+    <MESSAGE value="megadock voxel size reduced to 0.8A (in docker)" />
+    <MESSAGE value="tests updated" />
+    <MESSAGE value="De-embed: euqlidian distance replaces with cosine distance" />
+    <MESSAGE value="Dockerfile created for IgFold and run_igfold updated accordingly." />
+    <MESSAGE value="Dockerfile updated but still slower than the old igfold image" />
+    <MESSAGE value="Dockerfile fixed: the weight downloaded every time it runs" />
+    <MESSAGE value="popsize and maxiter now are parameters" />
+    <MESSAGE value="7urs fasta added" />
+    <MESSAGE value="cn" />
+    <MESSAGE value="all docker containers converted to proper dockerfile" />
+    <MESSAGE value="onion embed - WIP" />
+    <option name="LAST_COMMIT_MESSAGE" value="onion embed - WIP" />
+  </component>
+</project>

@@ -66,9 +66,7 @@ ig_fold_aligned_pdb = "ig_fold_aligned.pdb"
 # inserts:
 # http://opig.stats.ox.ac.uk/webapps/newsabdab/sabpred/anarci/
 
-
 # embedder class. keep global
-# emb = Embed("esm1b_t33_650M_UR50S")
 emb = Embed("esm1v_t33_650M_UR90S_5")
 # emb = Embed("esm_msa1b_t12_100M_UR50S")     # transformers not supported!
 
