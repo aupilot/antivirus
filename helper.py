@@ -125,8 +125,8 @@ print(highlight_differences(np2seq_show(x0)[0], str(start_seq['H'])))
     """
 
     # schema = 'a'  # Aho
-    # schema = 'i'  # IMGT
-    schema = 'c' # Chothia
+    schema = 'i'  # IMGT
+    # schema = 'c' # Chothia
     # schema = 'k' # kabat
     # schema = 'm' # martin
     # schema = 'w' # wolfguy

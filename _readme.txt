@@ -57,10 +57,10 @@ sigma 1.0
 
 =====================================
 starting from 2dd8 -- 41 iteration
-2dd8-Fv.fasta
+2dd8_Fv.fasta
 esm1v_t33_650M_UR90S_5
 'popsize': 18,
-'maxiter': 21,
+'maxiter': 41,
 sigma 0.5
 -0.6932
 
@@ -74,14 +74,14 @@ alignment.pdb (from 7e3c?)
 popsize: 18
 maxiter: 21
 --sigma=0.5 --dla=0.045 --mega=1
--0.46956
+-0.46956/-0.473
 ---------------------------
 Хреновый
 esm1b_t33_650M_UR50S
 -0.40559
 ---------------------------
 esm1v_t33_650M_UR90S_4
--0.48246
+-0.48246 -0.43762
 ---------------------------
 esm1v_t33_650M_UR90S_1
 crashed because it's truncated generated sequence WTF?
@@ -89,6 +89,18 @@ crashed because it's truncated generated sequence WTF?
 esm1v_t33_650M_UR90S_2
 crashed because it's truncated generated sequence WTF?
 
+esm1v_t33_650M_UR90S_3
+crashed because it's truncated generated sequence WTF?
+
+-----------------------------
+81 iteration - does not help
+
+---------------------------
+dla 0.03  sigma 0.5     -0.48465
+dla 0.045 sigma 0.7     -0.46893
+dla 0.045 sigma 0.5     -0.4519
+dla 0.045 sigma 0.2     -0.43734
+dla 0.045 sigma 0.5 IMGT -0.46189
 
 
 
@@ -96,16 +108,19 @@ crashed because it's truncated generated sequence WTF?
 =====================================
 
 
+
+
+
 текущие:
 
-mine: encoding with esm1v_t33_650M_UR90S_5 - confirm that no bugs??
+mine:
+Dmy kir1: dla 0.02 sigma 0.5
 
-kir1 starting from 2dd8! 81 iteration
 
 
 
 
 ================================
 идеи
-re-implementation of trRossetta for folding. Also another embedding
-https://github.com/songlab-cal/tape
+re-implementation of trRossetta for folding.
+another embedding - berta

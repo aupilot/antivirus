@@ -46,7 +46,7 @@ block_distance = 38.0 / 3   # Å
 # start point Ab. The chains must be named H and L
 # use http://opig.stats.ox.ac.uk/webapps/newsabdab/sabpred/anarci/ to cut Fv region from a longer fasta sequence
 # TODO: automate cutting the Ab Fv
-starting_point = "7urs-Fv.fasta"
+starting_point = "2dd8_Fv.fasta"
 # starting_point = "7e3c-Fv.fasta"
 
 # we calc this as max len for now in main()
