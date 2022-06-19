@@ -18,14 +18,15 @@ binds_to_exclude = "weak"
 # epitopes = ["S; RBD", "S; S2"]
 epitopes = ["S; RBD"]
 
-samples = None  # if None use the min of pos/neg for both pos and neg. Otherwise use this number for both
+samples = None                      # if None use the min of pos/neg for both pos and neg. Otherwise use this number for both
 
+# files are inside the "data" dir
 # spike = "7k9i_spike.pdb"            # wild type SARS-CoV2 spike protein S1. Don't use Amber numbering!
-spike = "7e3c_spike.pdb"            # wild type SARS-CoV2 spike protein S1. Don't use Amber numbering!
-mega_type = 0                       # 0 - orig, 1 - kir
-dla_threshold = 0.06                # drop the dockings with lower score as non-natural (from DLA-Ranker perspective)
-rosetta = 0                 # don't use rosetta. OpenMM is way better
-renum = 1
+spike = "7e3c_spike_aligned.pdb"            # wild type SARS-CoV2 spike protein S1. Don't use Amber numbering!
+mega_type = 1                       # 0 - orig, 1 - kir
+dla_threshold = 0.07                # drop the dockings with lower score as non-natural (from DLA-Ranker perspective)
+rosetta = 0                         # don't use rosetta. OpenMM is way better
+renum = 0
 
 result_file = "results.csv"
 
@@ -111,5 +112,10 @@ if __name__ == '__main__':
     sn = result_df[result_df['Binds'] == False]['Score'].to_numpy()
 
     print(f"Positive score: {sp[sp < 10.].mean()}   Negative: {sn[sn < 10.].mean()} ")
+
+    # https://dzone.com/articles/correlation-between-categorical-and-continuous-var-1
+    df = pd.read_csv("results.csv")
+    df_filtered = df[df['Score'] < 10]
+    print(df_filtered[['Binds','Score']].corr())
 
     print(time.asctime())
