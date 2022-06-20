@@ -14,7 +14,7 @@ from Bio.PDB import *
 from numpy.linalg import norm
 
 from embed import Embed
-from encode_t5 import EmbedT5
+from embed_t5 import EmbedT5
 from helper import highlight_differences, insert_spacers, align
 from ttictoc import tic, toc
 # from prody import parsePDB, writePDB
@@ -118,6 +118,8 @@ def np2full_seq(eee):
     # remove spacers if any
     H = H.replace("-", "")
     L = L.replace("-", "")
+    H = H.replace("_", "")
+    L = L.replace("_", "")
 
     return H, L
 
@@ -292,10 +294,10 @@ if __name__ == '__main__':
     print(time.asctime())
 
     if args.emb == 0:
-        print('Using ESM embedding')
+        print('Using ESM embedding esm1v_t33_650M_UR90S_5')
         emb = Embed("esm1v_t33_650M_UR90S_5")
     elif args.emb == 1:
-        print('Using ProtT5 XL embedding')
+        print('Using ProtT5 XL embedding prot_t5_xl_half_uniref50-enc')
         emb = EmbedT5('prot_t5_xl_half_uniref50-enc')
     elif args.emb == 2:
         print('Using ProtT5 XXL embedding')
@@ -329,15 +331,22 @@ if __name__ == '__main__':
 
     plot_avg = []
     plot_min = []
+
+    # with T5 embedding we must use sigma ~0.1, while with ECM its ~0.5
     sigma0 = args.sigma  # initial standard deviation to sample new solutions - should be ~ 1/4 of range???
 
+    if args.emb == 0:
+        limit = 80.
+    else:
+        limit = 1.1
     # # cfun = cma.ConstrainedFitnessAL(fun, constraints)  # unconstrained function with adaptive Lagrange multipliers
     es = cma.CMAEvolutionStrategy(x0, sigma0,
                                   inopts={
-                                      'ftarget': -5.0,
-                                      'popsize': args.popsize,        # must be even as we return pairs of target solutions
+                                      'CMA_diagonal': True,
+                                      'ftarget': -10.0,                 # unreacheable
+                                      'popsize': args.popsize,          # must be even as we return pairs of target solutions
                                       'maxiter': args.maxiter,
-                                      'bounds': [-80., 80.],
+                                      'bounds': [-limit, limit],
                                       'verb_time': 0,
                                       'verb_disp': 500,
                                       'seed': 3}, )

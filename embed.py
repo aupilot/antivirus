@@ -7,6 +7,8 @@ from scipy.spatial import distance
 
 # inspired by examples from
 # https://github.com/facebookresearch/esm
+from helper import highlight_differences
+
 
 class Embed(object):
     def __init__(self, model_file):
@@ -29,6 +31,17 @@ class Embed(object):
         seq = {}
         self.lengths = {}
         tmp = ''
+
+        # self.latent_alphabet = np.zeros((len(self.alphabet.unique_no_split_tokens), self.latent_size))
+        # for i, a in enumerate(self.alphabet.unique_no_split_tokens):
+        #     sequence = {
+        #         'a1': f"-{a}-",
+        #         'a2': f"X{a}X"
+        #     }
+        #     embedded = self.embed(sequence)
+        #     # self.latent_alphabet[i, :] = embedded[1,1,:]
+        #     self.latent_alphabet[i, :] = (embedded[0,1,:] + embedded[1,1,:])/2
+
         seq['alphabet'] = tmp.join(self.alphabet.unique_no_split_tokens)
         # seq['reversed'] = tmp.join(self.alphabet.unique_no_split_tokens)[::-1]
         embedded = self.embed(seq)
@@ -166,11 +179,20 @@ if __name__ == '__main__':
 
     em = Embed("esm1v_t33_650M_UR90S_5")
     eee = em.embed(seqs)
+    de_eee = em.de_embed(eee)
 
-    de_eee = em.de_embed(eee.flatten())
+    sq1h = seqs['H']  # + ' ' + start_seq_spacers['L']
+    sq2h = de_eee['H']  # + ' ' + np2seq_show(es.result.xfavorite)[1]
+    sq1l = seqs['L']
+    sq2l = de_eee['L']
+    print(sq1h + " " + sq1l)
+    # print(sq2h + " " + sq2l)
+    highligted_h, changes_h = highlight_differences(sq1h, sq2h)
+    highligted_l, changes_l = highlight_differences(sq1l, sq2l)
+    print(f"{highligted_h} {highligted_l} Diff: {changes_h}+{changes_l}")
 
-    print([str(val) for key, val in seqs.items()])
-    print([val for key, val in de_eee.items()])
+    # print([str(val) for key, val in seqs.items()])
+    # print([val for key, val in de_eee.items()])
 
 
 

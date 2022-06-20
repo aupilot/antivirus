@@ -4,12 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="fda49921-6ecf-410e-8a36-dd66d5c62c59" name="Changes" comment="merged to main">
-      <change afterPath="$PROJECT_DIR$/encode_t5.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/Antivirus.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Antivirus.iml" afterDir="false" />
+    <list default="true" id="fda49921-6ecf-410e-8a36-dd66d5c62c59" name="Changes" comment="new encoding ProtTran added, but not working due to OOM">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/embed.py" beforeDir="false" afterPath="$PROJECT_DIR$/embed.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/helper.py" beforeDir="false" afterPath="$PROJECT_DIR$/helper.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/encode_t5.py" beforeDir="false" afterPath="$PROJECT_DIR$/encode_t5.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -157,7 +155,7 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/main.py" />
-      <option name="PARAMETERS" value="--emb=0 --sigma=0.5 --dla=0.045 --popsize=18 --maxiter=25 --mega=1 --rosetta=0 --renum=0" />
+      <option name="PARAMETERS" value="--emb=1 --sigma=0.1 --dla=0.045 --popsize=18 --maxiter=25 --mega=1 --rosetta=0 --renum=0" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
@@ -415,7 +413,14 @@
       <option name="project" value="LOCAL" />
       <updated>1655599686265</updated>
     </task>
-    <option name="localTasksCounter" value="30" />
+    <task id="LOCAL-00030" summary="new encoding ProtTran added, but not working due to OOM">
+      <created>1655693352093</created>
+      <option name="number" value="00030" />
+      <option name="presentableId" value="LOCAL-00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1655693352093</updated>
+    </task>
+    <option name="localTasksCounter" value="31" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -442,7 +447,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Adding spacers with ANARCI" />
     <MESSAGE value="Added rotation of generated with IgF models to match a standard position. The IgFold generates Abs with random orientation" />
     <MESSAGE value="updated dock-n-score - now it saves best decoys" />
     <MESSAGE value="nc" />
@@ -467,7 +471,8 @@
     <MESSAGE value="all docker containers converted to proper dockerfile" />
     <MESSAGE value="onion embed - WIP" />
     <MESSAGE value="merged to main" />
-    <option name="LAST_COMMIT_MESSAGE" value="merged to main" />
+    <MESSAGE value="new encoding ProtTran added, but not working due to OOM" />
+    <option name="LAST_COMMIT_MESSAGE" value="new encoding ProtTran added, but not working due to OOM" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -483,14 +488,14 @@
           <option name="timeStamp" value="79" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/main.py</url>
-          <line>321</line>
-          <option name="timeStamp" value="80" />
+          <url>file://$PROJECT_DIR$/encode_t5.py</url>
+          <line>209</line>
+          <option name="timeStamp" value="100" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/encode_t5.py</url>
-          <line>208</line>
-          <option name="timeStamp" value="100" />
+          <line>182</line>
+          <option name="timeStamp" value="106" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

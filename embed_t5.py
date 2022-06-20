@@ -24,7 +24,7 @@ class EmbedT5(object):
         # === lets leave the model in CPU to preserve GPU memory
         # self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
         self.device = 'cpu'
-        print("Embedding running on {}".format(self.device))
+        print(f"Embedding running on {self.device}")
 
         if reference == 'prot_bert':
             self.latent_size = 1024
@@ -169,7 +169,8 @@ class EmbedT5(object):
 if __name__ == '__main__':
     seqs = {
         'H': Seq('QVQLVESGGGLIQPGGSLRLSCAASGFIVSRNYMIWVRQAPGKGLEWVSVIYSGGSTFYA'),
-        'L': Seq(''.join(alphabet)),
+        'L': Seq('EIVLTQSPGTLSLSPGERATLSCRASQSISSSYLAWYQQKPGQAPRLLIYGATSRATGTP'),
+        # 'L': Seq(''.join(alphabet)),
     }
 
     # see https://huggingface.co/models?sort=downloads&search=rostlab
