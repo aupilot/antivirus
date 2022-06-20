@@ -22,6 +22,7 @@ class Embed(object):
         # if torch.cuda.is_available():
         #     self.model = self.model.cuda()
         #     print("Transferred model to GPU")
+        print("Embedding running on CPU")
 
         # TODO: make sure that the meaning of '.' and '-' are correct
         # lets convert the alphabet to the latent space. We will need this to de-embed
@@ -51,6 +52,7 @@ class Embed(object):
             dataset, collate_fn=self.alphabet.get_batch_converter(), batch_sampler=batches, shuffle=False
         )
 
+        # attension: this only works for one batch with several sequences
         with torch.no_grad():
             for batch_idx, (labels, strs, toks) in enumerate(data_loader):
                 print(f"Processing {batch_idx + 1} of {len(batches)} batches ({toks.size(0)} sequences)")
@@ -60,8 +62,8 @@ class Embed(object):
         return logits
 
     def de_embed(self, eee):
-        batch_size = 2
-        eee_shaped = np.reshape(eee, (batch_size, -1, self.latent_size))
+        # batch_size = 2
+        # eee_shaped = np.reshape(eee, (batch_size, -1, self.latent_size))
 
         seqs = {}
         # the ESM dataset sorts data by size. We replaced it with our method get_batch_indices that does not sort, thus preserving the order
@@ -76,7 +78,7 @@ class Embed(object):
                     # euq distance
                     # dists.append(np.linalg.norm(a-eee_shaped[k, i, :]))
                     # cosine distance
-                    dists.append(distance.cosine(a, eee_shaped[k, i, :]))
+                    dists.append(distance.cosine(a, eee[k, i, :]))
 
                 match = np.argmin(dists)
                 # print(f"{self.alphabet.unique_no_split_tokens[match]}", end='')
@@ -156,17 +158,19 @@ class SeqDataset(FastaBatchedDataset):
 
 if __name__ == '__main__':
     seqs = {
-            'H': Seq('QLVLTQSPSASASLGASVKLTCTLSSGHSNYA'),
-            'L': Seq('GSSSGAERY'),
+            'H': Seq('QVQLVESGGGLIQPGGSLRLSCAASGFIVSRNYMIWVRQAPGKGLEWVSVIYSGGSTFYA'),
+            'L': Seq('EIVLTQSPGTLSLSPGERATLSCRASQSISSSYLAWYQQKPGQAPRLLIYGATSRATGTP'),
     }
     # dataset = SeqDataset.from_seqs(seqs)
     # print(len(dataset))
 
-    em = Embed("esm1b_t33_650M_UR50S")
+    em = Embed("esm1v_t33_650M_UR90S_5")
     eee = em.embed(seqs)
 
     de_eee = em.de_embed(eee.flatten())
-    print(de_eee)
+
+    print([str(val) for key, val in seqs.items()])
+    print([val for key, val in de_eee.items()])
 
 
 

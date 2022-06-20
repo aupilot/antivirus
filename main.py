@@ -14,6 +14,7 @@ from Bio.PDB import *
 from numpy.linalg import norm
 
 from embed import Embed
+from encode_t5 import EmbedT5
 from helper import highlight_differences, insert_spacers, align
 from ttictoc import tic, toc
 # from prody import parsePDB, writePDB
@@ -67,7 +68,7 @@ ig_fold_aligned_pdb = "ig_fold_aligned.pdb"
 # http://opig.stats.ox.ac.uk/webapps/newsabdab/sabpred/anarci/
 
 # embedder class. keep global
-emb = Embed("esm1v_t33_650M_UR90S_5")
+global emb
 # emb = Embed("esm_msa1b_t12_100M_UR50S")     # transformers not supported!
 
 # residue_letters = [
@@ -106,6 +107,9 @@ def seq2np(seq_dict):
 # we do not separate CDRs here. We rely on the embedding as it includes the language model.
 # TODO: add auto CDR detection and candidates pruning inside the optimiser to increase the prob changes in CRDs rather than elsewhere??
 def np2full_seq(eee):
+    batch_size = 2
+    eee = np.reshape(eee, (batch_size, -1, emb.latent_size))
+
     seqs = emb.de_embed(eee)
 
     H = seqs['H']
@@ -120,6 +124,8 @@ def np2full_seq(eee):
 
 # do not remove "-" for demonstration only
 def np2seq_show(eee):
+    batch_size = 2
+    eee = np.reshape(eee, (batch_size, -1, emb.latent_size))
     seqs = emb.de_embed(eee)
     H = seqs['H']
     L = seqs['L']
@@ -255,6 +261,9 @@ def get_args():
     parser.add_argument("--popsize", type=int, default=18, help="""
         DLA-Ranker thereshold.
     """)
+    parser.add_argument("--emb", type=int, default=0, help="""
+        Embedding type: 0 -> Facebook ESM, 1 -> ProtTrans prot_t5_xl_half_uniref50-enc, 2 -> ProtTrans prot_t5_xxl_uniref50
+    """)
     parser.add_argument("--maxiter", type=int, default=21, help="""
         DLA-Ranker thereshold.
     """)
@@ -281,6 +290,18 @@ if __name__ == '__main__':
     renumber = args.renum
 
     print(time.asctime())
+
+    if args.emb == 0:
+        print('Using ESM embedding')
+        emb = Embed("esm1v_t33_650M_UR90S_5")
+    elif args.emb == 1:
+        print('Using ProtT5 XL embedding')
+        emb = EmbedT5('prot_t5_xl_half_uniref50-enc')
+    elif args.emb == 2:
+        print('Using ProtT5 XXL embedding')
+        emb = EmbedT5('prot_t5_xxl_uniref50')
+    else:
+        raise Exception('Unknown Embedding type')
 
     start_seq = {}
     for record in SeqIO.parse(starting_point, "fasta"):
