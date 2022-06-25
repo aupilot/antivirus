@@ -4,11 +4,17 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="fda49921-6ecf-410e-8a36-dd66d5c62c59" name="Changes" comment="new encoding ProtTran added, but not working due to OOM">
+    <list default="true" id="fda49921-6ecf-410e-8a36-dd66d5c62c59" name="Changes" comment="T5 embedding works">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/embed.py" beforeDir="false" afterPath="$PROJECT_DIR$/embed.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/encode_t5.py" beforeDir="false" afterPath="$PROJECT_DIR$/encode_t5.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/_readme.txt" beforeDir="false" afterPath="$PROJECT_DIR$/_readme.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker-docknscore/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/docker-docknscore/Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker-docknscore/dock-n-score.py" beforeDir="false" afterPath="$PROJECT_DIR$/docker-docknscore/dock-n-score.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/embed_t5.py" beforeDir="false" afterPath="$PROJECT_DIR$/embed_t5.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rename.py" beforeDir="false" afterPath="$PROJECT_DIR$/rename.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_dock_score.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_dock_score.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_dock_score.sh" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_dock_score.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_score.sh" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_score.sh" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -47,7 +53,7 @@
     </file-type-list>
   </component>
   <component name="HighlightingSettingsPerFile">
-    <setting file="file://$PROJECT_DIR$/encode_t5.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/embed_t5.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/helper.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/embed.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/main.py" root0="FORCE_HIGHLIGHTING" />
@@ -79,7 +85,7 @@
     </key>
   </component>
   <component name="RunManager" selected="Python.main">
-    <configuration name="align" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="embed_t5" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Antivirus" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -91,49 +97,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/align.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="embed" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="Antivirus" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/embed.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="encode_t5" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="Antivirus" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/encode_t5.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/embed_t5.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -155,7 +119,7 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/main.py" />
-      <option name="PARAMETERS" value="--emb=1 --sigma=0.1 --dla=0.045 --popsize=18 --maxiter=25 --mega=1 --rosetta=0 --renum=0" />
+      <option name="PARAMETERS" value="--emb=1 --sigma=0.3 --dla=0.0 --popsize=36 --maxiter=21 --mega=1 --rosetta=0 --renum=0" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
@@ -163,7 +127,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="test_covabdab" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="test_dock_score" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Antivirus" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -171,11 +135,11 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/test_covabdab.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/tests/test_dock_score.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -184,20 +148,45 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="test_score.sh" type="ShConfigurationType" temporary="true">
+      <option name="SCRIPT_TEXT" value="" />
+      <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
+      <option name="SCRIPT_PATH" value="$PROJECT_DIR$/tests/test_score.sh" />
+      <option name="SCRIPT_OPTIONS" value="" />
+      <option name="INDEPENDENT_SCRIPT_WORKING_DIRECTORY" value="true" />
+      <option name="SCRIPT_WORKING_DIRECTORY" value="$PROJECT_DIR$/tests" />
+      <option name="INDEPENDENT_INTERPRETER_PATH" value="true" />
+      <option name="INTERPRETER_PATH" value="/bin/bash" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="EXECUTE_IN_TERMINAL" value="true" />
+      <option name="EXECUTE_SCRIPT_FILE" value="true" />
+      <envs />
+      <method v="2" />
+    </configuration>
+    <configuration name="docker-docknscore/Dockerfile" type="docker-deploy" factoryName="dockerfile" temporary="true" server-name="Docker">
+      <deployment type="dockerfile">
+        <settings>
+          <option name="imageTag" value="8kir8/score:latest" />
+          <option name="containerName" value="" />
+          <option name="sourceFilePath" value="docker-docknscore/Dockerfile" />
+        </settings>
+      </deployment>
+      <method v="2" />
+    </configuration>
     <list>
+      <item itemvalue="Docker.docker-docknscore/Dockerfile" />
       <item itemvalue="Python.main" />
-      <item itemvalue="Python.test_covabdab" />
-      <item itemvalue="Python.align" />
-      <item itemvalue="Python.encode_t5" />
-      <item itemvalue="Python.embed" />
+      <item itemvalue="Python.embed_t5" />
+      <item itemvalue="Python.test_dock_score" />
+      <item itemvalue="Shell Script.test_score.sh" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Python.main" />
-        <item itemvalue="Python.encode_t5" />
-        <item itemvalue="Python.embed" />
-        <item itemvalue="Python.align" />
-        <item itemvalue="Python.test_covabdab" />
+        <item itemvalue="Python.test_dock_score" />
+        <item itemvalue="Docker.docker-docknscore/Dockerfile" />
+        <item itemvalue="Shell Script.test_score.sh" />
+        <item itemvalue="Python.embed_t5" />
       </list>
     </recent_temporary>
   </component>
@@ -420,7 +409,14 @@
       <option name="project" value="LOCAL" />
       <updated>1655693352093</updated>
     </task>
-    <option name="localTasksCounter" value="31" />
+    <task id="LOCAL-00031" summary="T5 embedding works">
+      <created>1655697885190</created>
+      <option name="number" value="00031" />
+      <option name="presentableId" value="LOCAL-00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1655697885190</updated>
+    </task>
+    <option name="localTasksCounter" value="32" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -447,7 +443,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Added rotation of generated with IgF models to match a standard position. The IgFold generates Abs with random orientation" />
     <MESSAGE value="updated dock-n-score - now it saves best decoys" />
     <MESSAGE value="nc" />
     <MESSAGE value="scoring script wrapped in &quot;for&quot;" />
@@ -472,7 +467,8 @@
     <MESSAGE value="onion embed - WIP" />
     <MESSAGE value="merged to main" />
     <MESSAGE value="new encoding ProtTran added, but not working due to OOM" />
-    <option name="LAST_COMMIT_MESSAGE" value="new encoding ProtTran added, but not working due to OOM" />
+    <MESSAGE value="T5 embedding works" />
+    <option name="LAST_COMMIT_MESSAGE" value="T5 embedding works" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -488,12 +484,12 @@
           <option name="timeStamp" value="79" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/encode_t5.py</url>
+          <url>file://$PROJECT_DIR$/embed_t5.py</url>
           <line>209</line>
           <option name="timeStamp" value="100" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/encode_t5.py</url>
+          <url>file://$PROJECT_DIR$/embed_t5.py</url>
           <line>182</line>
           <option name="timeStamp" value="106" />
         </line-breakpoint>

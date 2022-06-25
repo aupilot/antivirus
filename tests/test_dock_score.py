@@ -56,7 +56,8 @@ def save_blocking_positions_pdb(pdb_file):
 
 if __name__ == '__main__':
 
-    dla_threshold = 0.045
+    dla_threshold = 0.0 # disable DLARanker
+    #dla_threshold = 0.045
     mega_type = 1
 
     # -0.52415 (Vox size 1.0A) / -0.62479
@@ -80,8 +81,8 @@ if __name__ == '__main__':
     # LIGAND = "7urs_spike.pdb"
 
     # pdb errors on naccess
-    RECEPTOR = "2dd8_Fv.pdb"
-    LIGAND = "2dd8_spike.pdb"
+    # RECEPTOR = "2dd8_Fv.pdb"
+    # LIGAND = "2dd8_spike.pdb"
 
     # -0.72005 (Vox size 0.8A)
     # RECEPTOR = "6yla_Fv.pdb"
@@ -95,7 +96,12 @@ if __name__ == '__main__':
     # RECEPTOR = "6c6z_Fv.pdb"
     # LIGAND = "6c6z_spike.pdb"
 
-
+    # -0.26742
+    RECEPTOR = "1sy6_Fv.pdb"
+    LIGAND = "1sy6_epitope_docked.pdb"
+    # -0.30206
+    # RECEPTOR = "1sy6_Fv.pdb"
+    # LIGAND = "6jxr_epitope_aligned_to_1sy6.pdb"
 
     save_blocking_positions_pdb(f"{RECEPTOR}")
 

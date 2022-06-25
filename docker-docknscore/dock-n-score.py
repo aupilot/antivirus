@@ -11,8 +11,8 @@ import numpy as np
 import random
 
 
-##### this script sits inside a container
-
+##### this script sits inside a container!
+decoy_dir = '/opt/var/decoys/'
 good_decoys = "/opt/var/good_decoys/"
 save_best = "/workdir/best_decoys/"
 
@@ -193,8 +193,16 @@ if __name__ == '__main__':
     print(args.legand)
     megadock(args.receptor, args.legand, args.mega)
 
-    print("Re-score with DLA")
-    output = subprocess.run(["python3","/opt/DLA-Ranker/dla_ranker.py", f"{args.dla}"], capture_output=False, check=True)
+    if args.dla == 0.0:
+        print("Skipping DLARanking")
+        # we just copy 6 first decoys
+        shutil.rmtree(good_decoys, ignore_errors=True)
+        os.makedirs(good_decoys)
+        for dec_no in range(1,6+1):
+            shutil.copy(f"{decoy_dir}decoy.{dec_no}.pdb", good_decoys)
+    else:
+        print(f"Re-score with DLA, thr: {args.dla}")
+        output = subprocess.run(["python3","/opt/DLA-Ranker/dla_ranker.py", f"{args.dla}"], capture_output=False, check=True)
 
     print('Scoring with Vina:')
     min_score = vina_score()

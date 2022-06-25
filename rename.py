@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 import sys
 from Bio.PDB import PDBList, PDBIO, PDBParser
 
@@ -27,7 +25,7 @@ structure = parser.get_structure('kir', inp_file)
 renames = {
     "A": "H",
     "B": "L",
-    "S": "A"
+    "f": "A"
 }
 
 for model in structure:

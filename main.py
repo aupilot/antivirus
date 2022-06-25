@@ -36,7 +36,8 @@ renumber = 0
 
 # !!! we need to manually roughly align the spike over a typical Ab Fv. The chain must be renamed to "A" with rename.py
 # spike_list = ["7e3c_spike_aligned.pdb", "7mem_spike_aligned.pdb"]
-spike_list = ["7urs_spike.pdb"]
+spike_list = ["1sy6_epitope_aligned.pdb"]
+# spike_list = ["1sy6_epitope_aligned.pdb", "6jxr_epitope_aligned.pdb"]
 aligned_over = "alignment.pdb"
 
 # the max distance between the atom and the line from H-end and L-end is about 38Å
@@ -44,11 +45,12 @@ aligned_over = "alignment.pdb"
 block_distance = 38.0 / 3   # Å
 
 
-# start point Ab. The chains must be named H and L
+# start point Ab. The chains must be named H and L (no extra shit in names!)
 # use http://opig.stats.ox.ac.uk/webapps/newsabdab/sabpred/anarci/ to cut Fv region from a longer fasta sequence
 # TODO: automate cutting the Ab Fv
-starting_point = "2dd8_Fv.fasta"
+# starting_point = "2dd8_Fv.fasta"
 # starting_point = "7e3c-Fv.fasta"
+starting_point = "1sy6-Fv.fasta"
 
 # we calc this as max len for now in main()
 # chain_max_length = 0
@@ -69,33 +71,9 @@ ig_fold_aligned_pdb = "ig_fold_aligned.pdb"
 
 # embedder class. keep global
 global emb
-# emb = Embed("esm_msa1b_t12_100M_UR50S")     # transformers not supported!
-
-# residue_letters = [
-#     "-",  # spacer
-#     "A",
-#     "C",
-#     "D",
-#     "E",
-#     "F",
-#     "G",
-#     "H",
-#     "I",
-#     "K",
-#     "L",
-#     "M",
-#     "N",
-#     "P",
-#     "Q",
-#     "R",
-#     "S",
-#     "T",
-#     "V",
-#     "W",
-#     "Y",
-# ]
 
 global_best_score = 999.0
+
 
 # input arg: dict of Seq 'H', 'L'
 # len must be less than 1022 (ESM embedding limit)
@@ -139,8 +117,10 @@ def t(p, q, r):
     x = p-q
     return np.dot(r-q, x)/np.dot(x, x)
 
+
 def d(p, q, r):
     return np.linalg.norm(t(p, q, r)*(p-q)+q-r)
+
 
 # Automatically mark blocked residues based on distance from the line between end of H to the end of L.
 # This requires pdb file as input.
@@ -261,19 +241,19 @@ def get_args():
         CMA-ES sigma.
     """)
     parser.add_argument("--popsize", type=int, default=18, help="""
-        DLA-Ranker thereshold.
+        CMA-ES population size. Recommended 4 + int(3 * np.log(N)). Must be even as we run 2 threads
     """)
     parser.add_argument("--emb", type=int, default=0, help="""
-        Embedding type: 0 -> Facebook ESM, 1 -> ProtTrans prot_t5_xl_half_uniref50-enc, 2 -> ProtTrans prot_t5_xxl_uniref50
+        Embedding type: 0-> Facebook ESM, 1-> ProtTrans prot_t5_xl_half_uniref50-enc, 2-> ProtTrans prot_t5_xxl_uniref50, 3-> prot_t5_xl_bfd
     """)
     parser.add_argument("--maxiter", type=int, default=21, help="""
         DLA-Ranker thereshold.
     """)
     parser.add_argument("--dla", type=float, default=0.06, help="""
-        DLA-Ranker thereshold.
+        DLA-Ranker thereshold. Set to 0.0 to disable DLA 
     """)
     parser.add_argument("--mega", type=int, default=0, help="""
-        Use kir optimised Megadock (1) or not (0).
+        Use Kir's optimised Megadock (1) or the original one (0).
     """)
     parser.add_argument("--rosetta", type=int, default=0, help="""
         Use Rosetta for IgFold refinement (1) or OpenMM (0).
@@ -297,11 +277,14 @@ if __name__ == '__main__':
         print('Using ESM embedding esm1v_t33_650M_UR90S_5')
         emb = Embed("esm1v_t33_650M_UR90S_5")
     elif args.emb == 1:
-        print('Using ProtT5 XL embedding prot_t5_xl_half_uniref50-enc')
+        print('Using ProtT5 prot_t5_xl_half_uniref50-enc embedding ')
         emb = EmbedT5('prot_t5_xl_half_uniref50-enc')
     elif args.emb == 2:
-        print('Using ProtT5 XXL embedding')
+        print('Using ProtT5 prot_t5_xxl_uniref50 embedding')
         emb = EmbedT5('prot_t5_xxl_uniref50')
+    elif args.emb == 3:
+        print('Using ProtT5 prot_t5_xl_bfd embedding')
+        emb = EmbedT5('prot_t5_xl_bfd')
     else:
         raise Exception('Unknown Embedding type')
 
@@ -313,7 +296,7 @@ if __name__ == '__main__':
         print(f"Sequence length of {record.id}: {len(record)}")
 
     print("Adding spacers with ANARCI")
-    # it seems that adding spacers confuses much the encoding. So, we should either use moderate chema (e.g. Chothia) or no spacers at all??
+    # it seems that adding spacers confuses much the encoding. So, we should either use moderate schema (e.g. Chothia) or no spacers at all??
     start_seq_spacers = insert_spacers(start_seq)
 
     if not os.path.exists("data"):
@@ -336,9 +319,9 @@ if __name__ == '__main__':
     sigma0 = args.sigma  # initial standard deviation to sample new solutions - should be ~ 1/4 of range???
 
     if args.emb == 0:
-        limit = 80.
+        limit = 80.0
     else:
-        limit = 1.1
+        limit = 2.0
     # # cfun = cma.ConstrainedFitnessAL(fun, constraints)  # unconstrained function with adaptive Lagrange multipliers
     es = cma.CMAEvolutionStrategy(x0, sigma0,
                                   inopts={

@@ -12,6 +12,7 @@ alphabet = [
     "_", "A", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "P", "Q", "R", "S", "T", "V", "W", "Y",
 ]
 
+# pip install transformers sentencepiece
 
 class EmbedT5(object):
     def __init__(self, reference):
@@ -174,8 +175,8 @@ if __name__ == '__main__':
     }
 
     # see https://huggingface.co/models?sort=downloads&search=rostlab
-    em = EmbedT5('prot_t5_xl_half_uniref50-enc')
-    # em = EmbedT5('prot_t5_xl_bfd')
+    # em = EmbedT5('prot_t5_xl_half_uniref50-enc')
+    em = EmbedT5('prot_t5_xl_bfd')
     # em = EmbedT5('prot_bert')
 
     eee = em.embed(seqs)

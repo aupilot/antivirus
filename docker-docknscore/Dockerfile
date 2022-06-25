@@ -80,3 +80,5 @@ COPY run_obabel.sh /opt/run_obabel.sh
 
 RUN pip cache purge && \
     apt-get clean
+
+# TODO: we might need to instal the original megadock too

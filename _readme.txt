@@ -113,8 +113,9 @@ dla 0.045 sigma 0.5 IMGT -0.46189
 
 текущие:
 
-mine:
-Dmy kir1: dla 0.02 sigma 0.5
+mine: new embedding test
+
+Dmy kir1: compare with old embedding
 
 
 
