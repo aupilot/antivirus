@@ -214,7 +214,7 @@ def double_fun_igfold(X):
             # run dock & score to (multiple) paratopes
             output = subprocess.run(
                 ["./run_score.sh", f"/workdir/th.{thread_no}/{ig_fold_aligned_pdb}", "/workdir/" + spike, f"{dla_threshold}",
-                 f"{mega_type}"],
+                 f"{mega_type}", f"{score_system}"],
                 capture_output=True, check=True)  # these paths are inside the container!
             best_score_sep[s,thread_no] = float(output.stdout.split()[-1])                          # TODO: perhaps there is a better way of combining scores
 
@@ -263,6 +263,10 @@ def get_args():
     parser.add_argument("--renum", type=int, default=0, help="""
         Send predicted structure to AbNum server for Chothia renumbering (1)
     """)
+    parser.add_argument("--score", type=int, default=0, help="""
+        Type of scoring. 0 - Vina, 1 - OnionNet
+    """)
+
     return parser.parse_args()
 
 
@@ -272,6 +276,7 @@ if __name__ == '__main__':
     mega_type = args.mega
     use_rosetta = args.rosetta
     renumber = args.renum
+    score_system = args.score
 
     print(time.asctime())
 

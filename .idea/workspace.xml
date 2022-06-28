@@ -4,22 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="fda49921-6ecf-410e-8a36-dd66d5c62c59" name="Changes" comment="disabling DLA added. More tests done">
-      <change afterPath="$PROJECT_DIR$/1sy6-Fv.fasta" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/7ps7-Fv.fasta" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/1sy6_Fv.pdb" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/1sy6_epitope.pdb" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/1sy6_epitope_docked.pdb" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/6jxr_epitope.pdb" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/6jxr_epitope_aligned_to_1sy6.pdb" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/test_onion.sh" afterDir="false" />
+    <list default="true" id="fda49921-6ecf-410e-8a36-dd66d5c62c59" name="Changes" comment="onion score added to container">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/docker-docknscore/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/docker-docknscore/Dockerfile" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/docker-docknscore/dock-n-score.py" beforeDir="false" afterPath="$PROJECT_DIR$/docker-docknscore/dock-n-score.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/embed_onion.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rename.py" beforeDir="false" afterPath="$PROJECT_DIR$/rename.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_dock_score.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_dock_score.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/run_score.sh" beforeDir="false" afterPath="$PROJECT_DIR$/run_score.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_onion.sh" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_onion.sh" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -89,7 +80,7 @@
       <recent name="$PROJECT_DIR$/docker-igfold" />
     </key>
   </component>
-  <component name="RunManager" selected="Shell Script.test_onion.sh">
+  <component name="RunManager" selected="Python.main">
     <configuration name="main" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Antivirus" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -103,7 +94,7 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/main.py" />
-      <option name="PARAMETERS" value="--emb=1 --sigma=0.2 --dla=0.0 --popsize=24 --maxiter=21 --mega=1 --rosetta=0 --renum=0" />
+      <option name="PARAMETERS" value="--emb=1 --sigma=0.2 --dla=0.0 --popsize=24 --maxiter=21 --mega=1 --rosetta=0 --renum=0 --score=1" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
@@ -181,9 +172,9 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.main" />
         <item itemvalue="Shell Script.test_onion.sh" />
         <item itemvalue="Docker.docker-docknscore/Dockerfile" />
-        <item itemvalue="Python.main" />
         <item itemvalue="Python.test_dock_score" />
         <item itemvalue="Shell Script.test_score.sh" />
       </list>
@@ -422,7 +413,14 @@
       <option name="project" value="LOCAL" />
       <updated>1656145622422</updated>
     </task>
-    <option name="localTasksCounter" value="33" />
+    <task id="LOCAL-00033" summary="onion score added">
+      <created>1656411968380</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1656411968380</updated>
+    </task>
+    <option name="localTasksCounter" value="34" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -449,8 +447,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="nc" />
-    <MESSAGE value="scoring script wrapped in &quot;for&quot;" />
     <MESSAGE value="dockes to a list of epitopes and calc average score" />
     <MESSAGE value="updated debug output and 7e3c aligned" />
     <MESSAGE value="bug in print line fixed" />
@@ -474,7 +470,9 @@
     <MESSAGE value="new encoding ProtTran added, but not working due to OOM" />
     <MESSAGE value="T5 embedding works" />
     <MESSAGE value="disabling DLA added. More tests done" />
-    <option name="LAST_COMMIT_MESSAGE" value="disabling DLA added. More tests done" />
+    <MESSAGE value="onion score added" />
+    <MESSAGE value="onion score added to container" />
+    <option name="LAST_COMMIT_MESSAGE" value="onion score added to container" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

@@ -29,7 +29,7 @@ RUN wget -P /tmp http://www.fftw.org/${FFTW_TARGET}.tar.gz && \
 #RUN pip install torch torchvision --extra-index-url https://download.pytorch.org/whl/cu113
 RUN pip install matplotlib lz4 tensorflow-gpu==2.9.0
 RUN pip install prody
-RUN pip install scikit-learn pandas
+RUN pip install scikit-learn==0.22.1 pandas
 
 WORKDIR /opt
 RUN git clone https://github.com/aupilot/DLA-Ranker.git && \
@@ -75,16 +75,21 @@ RUN chmod +x /usr/local/bin/vina
 #RUN pip install vina
 
 ########### OnionNet #############
-# we need that specific version:  scikit-learn==0.22.1
-RUN pip install mdtraj tensorflow-gpu rdkit biopandas joblib
-RUN git clone https://github.com/aupilot/onionnet /opt/onionnet
-ADD https:// /opt/onionnet/models/CNN_final_model_weights.h5
+# Do we need that specific version??   scikit-learn==0.22.1
+RUN pip install rdkit biopandas joblib mdtraj
+RUN git clone -b master https://github.com/aupilot/onionnet /opt/onionnet
+#ADD https://drive.google.com/uc?export=download&id=14QmxihpshNpxwev2Cvnw2Qadspr1WLbF&confirm=Y /opt/onionnet/models_new/CNN_final_model_weights.h5
+ADD http://dl.dropboxusercontent.com/s/w6kl81cr84ayniz/CNN_final_model_weights.h5?dl=1 /opt/onionnet/models_new/CNN_final_model_weights.h5
+#RUN mkdir -p /opt/onionnet/models_new
+#COPY CNN_final_model_weights.h5v /opt/onionnet/models_new/CNN_final_model_weights.h5
 
+RUN mkdir -p /opt/var
 COPY dock-n-score.py /opt/dock-n-score.py
 COPY block3.py /opt/block3.py
 COPY run_obabel.sh /opt/run_obabel.sh
+#COPY onion_score.sh /opt/onionnet/kir01/
 
 RUN pip cache purge && \
     apt-get clean
 
-# TODO: we might need to instal the original megadock too
+# TODO: we might need to install the original megadock too?

@@ -168,7 +168,7 @@ def onion_score():
     #     pdbfh = open(f"/opt/var/decoys/decoy.{d+1}.pdb", 'r')
         pdb_name = good_decoys+dec
 
-        output = subprocess.run(["/opt/onionnet/kir01/onion_score.sh"], capture_output=True, check=True)
+        output = subprocess.run(["/bin/bash", "/opt/onionnet/kir01/onion_score.sh", pdb_name], capture_output=True, check=True)
 
         out_text = output.stdout.decode().split("\n")
         affinity_lines  = [match for match in out_text if "pKa" in match]
