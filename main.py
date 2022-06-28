@@ -36,8 +36,8 @@ renumber = 0
 
 # !!! we need to manually roughly align the spike over a typical Ab Fv. The chain must be renamed to "A" with rename.py
 # spike_list = ["7e3c_spike_aligned.pdb", "7mem_spike_aligned.pdb"]
-spike_list = ["1sy6_epitope_aligned.pdb"]
 # spike_list = ["1sy6_epitope_aligned.pdb", "6jxr_epitope_aligned.pdb"]
+spike_list = ["1sy6_epitope_aligned.pdb"]
 aligned_over = "alignment.pdb"
 
 # the max distance between the atom and the line from H-end and L-end is about 38Å
@@ -48,9 +48,11 @@ block_distance = 38.0 / 3   # Å
 # start point Ab. The chains must be named H and L (no extra shit in names!)
 # use http://opig.stats.ox.ac.uk/webapps/newsabdab/sabpred/anarci/ to cut Fv region from a longer fasta sequence
 # TODO: automate cutting the Ab Fv
+# pdb_tofasta.py -multi '/home/kir/Documents/Antivirus/tests/7ps7_Fv.pdb' > /home/kir/Documents/Antivirus/7ps7.fasta
 # starting_point = "2dd8_Fv.fasta"
 # starting_point = "7e3c-Fv.fasta"
-starting_point = "1sy6-Fv.fasta"
+# starting_point = "1sy6-Fv.fasta"
+starting_point = "7ps7-Fv.fasta"
 
 # we calc this as max len for now in main()
 # chain_max_length = 0

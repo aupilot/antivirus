@@ -24,7 +24,7 @@ structure = parser.get_structure('kir', inp_file)
 # }
 renames = {
     "A": "H",
-    "B": "L",
+    "g": "A",
     "f": "A"
 }
 

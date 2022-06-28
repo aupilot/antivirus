@@ -97,11 +97,12 @@ if __name__ == '__main__':
     # LIGAND = "6c6z_spike.pdb"
 
     # -0.26742
-    RECEPTOR = "1sy6_Fv.pdb"
-    LIGAND = "1sy6_epitope_docked.pdb"
-    # -0.30206
     # RECEPTOR = "1sy6_Fv.pdb"
-    # LIGAND = "6jxr_epitope_aligned_to_1sy6.pdb"
+    # LIGAND = "1sy6_epitope_docked.pdb"
+
+    # -0.30206
+    RECEPTOR = "1sy6_Fv.pdb"
+    LIGAND = "6jxr_epitope_aligned_to_1sy6.pdb"
 
     save_blocking_positions_pdb(f"{RECEPTOR}")
 

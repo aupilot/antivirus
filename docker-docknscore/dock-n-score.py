@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-
+import math
 import os
 import shutil
 import sys
@@ -151,6 +151,46 @@ def vina_score():
         return np.min(np.array(scores))
 
 
+def onion_score():
+    decoy_list = listdir(good_decoys)
+
+    scores = []
+    decoy_no = 0
+    best_affinity = 10
+    for dec in decoy_list:
+        if not dec.endswith("pdb"):
+            continue
+        if not dec.startswith("decoy"):
+            continue
+
+        decoy_no += 1
+    # for d in range(n_scored_decoys):
+    #     pdbfh = open(f"/opt/var/decoys/decoy.{d+1}.pdb", 'r')
+        pdb_name = good_decoys+dec
+
+        output = subprocess.run(["/opt/onionnet/kir01/onion_score.sh"], capture_output=True, check=True)
+
+        out_text = output.stdout.decode().split("\n")
+        affinity_lines  = [match for match in out_text if "pKa" in match]
+
+        affinity_txt = affinity_lines[0]
+
+        affinity = 2 - math.log2(float(affinity_txt.split()[1]))
+        print(f"Dec {decoy_no} {affinity_txt}, adj {affinity} ")
+
+        scores.append(affinity)
+        if affinity < best_affinity and affinity < -0.4:
+            best_affinity = affinity
+            # copy the whole decoy to save the complex
+            shutil.copy(good_decoys+dec, f"{save_best}dec_{-affinity:.2f}.pdb")
+
+    if len(scores) == 0:
+        print("No valid decoys generated, nothing to score")
+        return 10.0
+    else:
+        return np.min(np.array(scores))
+
+
 def get_args():
     """Gets command line arguments"""
     desc = ('''
@@ -168,6 +208,9 @@ def get_args():
     """)
     parser.add_argument("mega", type=int, default=0, help="""
         Use kir optimised Megadock (1) or not (0).
+    """)
+    parser.add_argument("score", type=int, default=0, help="""
+        Score method. 0 (default): vina, 1: onionnet.
     """)
 
     return parser.parse_args()
@@ -204,7 +247,13 @@ if __name__ == '__main__':
         print(f"Re-score with DLA, thr: {args.dla}")
         output = subprocess.run(["python3","/opt/DLA-Ranker/dla_ranker.py", f"{args.dla}"], capture_output=False, check=True)
 
-    print('Scoring with Vina:')
-    min_score = vina_score()
+    if args.score == 0:
+        print('Scoring with Vina:')
+        min_score = vina_score()
+    elif args.score == 1:
+        print('Scoring with OnionNet:')
+        min_score = onion_score()
+    else:
+        raise Exception("Invalid Scoring Method")
 
     print(f"The best score is {min_score}")

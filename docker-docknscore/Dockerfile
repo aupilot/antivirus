@@ -74,6 +74,12 @@ RUN chmod +x /usr/local/bin/vina
 # we don't use python integration
 #RUN pip install vina
 
+########### OnionNet #############
+# we need that specific version:  scikit-learn==0.22.1
+RUN pip install mdtraj tensorflow-gpu rdkit biopandas joblib
+RUN git clone https://github.com/aupilot/onionnet /opt/onionnet
+ADD https:// /opt/onionnet/models/CNN_final_model_weights.h5
+
 COPY dock-n-score.py /opt/dock-n-score.py
 COPY block3.py /opt/block3.py
 COPY run_obabel.sh /opt/run_obabel.sh
