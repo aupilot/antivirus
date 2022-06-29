@@ -241,7 +241,8 @@ if __name__ == '__main__':
         # we just copy 6 first decoys
         shutil.rmtree(good_decoys, ignore_errors=True)
         os.makedirs(good_decoys)
-        for dec_no in range(1,6+1):
+        # copy only 5 best decoys
+        for dec_no in range(1,5+1):
             shutil.copy(f"{decoy_dir}decoy.{dec_no}.pdb", good_decoys)
     else:
         print(f"Re-score with DLA, thr: {args.dla}")

@@ -42,8 +42,12 @@
 
 
 # 2.69287 (kcal/mol). The other epitope of the same epsilon does not match well
-obabel 1sy6_Fv.pdb -xr -O /tmp/receptor.pdbqt -p 7.4
-obabel 6jxr_epitope_aligned_to_1sy6.pdb -O /tmp/ligand.pdbqt -l 0 -p 7.4
+#obabel 1sy6_Fv.pdb -xr -O /tmp/receptor.pdbqt -p 7.4
+#obabel 6jxr_epitope_aligned_to_1sy6.pdb -O /tmp/ligand.pdbqt -l 0 -p 7.4
+
+python3 split_rec_lig.py f_dec_1.00.pdb ./
+obabel rec.pdb -xr -O /tmp/receptor.pdbqt -p 7.4
+obabel lig.pdb -O /tmp/ligand.pdbqt -l 0 -p 7.4
 
 vina --receptor /tmp/receptor.pdbqt --ligand /tmp/ligand.pdbqt  --score_only
 

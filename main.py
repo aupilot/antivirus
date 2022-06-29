@@ -42,7 +42,7 @@ aligned_over = "alignment.pdb"
 
 # the max distance between the atom and the line from H-end and L-end is about 38Å
 # so, we will block the atoms that are closer than about 1/3 of that
-block_distance = 38.0 / 3   # Å
+block_distance = 38.0 * 0.4   # Å , 0.4 from bottom does not add to megadock score. This prevents docking to the bottom
 
 
 # start point Ab. The chains must be named H and L (no extra shit in names!)
@@ -264,7 +264,7 @@ def get_args():
         Send predicted structure to AbNum server for Chothia renumbering (1)
     """)
     parser.add_argument("--score", type=int, default=0, help="""
-        Type of scoring. 0 - Vina, 1 - OnionNet
+        Type of scoring. 0 - Vina, 1 - OnionNet. Onion could be used for screening, but does not look good for optimising. Also very slow
     """)
 
     return parser.parse_args()

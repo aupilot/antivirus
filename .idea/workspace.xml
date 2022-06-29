@@ -4,13 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="fda49921-6ecf-410e-8a36-dd66d5c62c59" name="Changes" comment="onion score added to container">
+    <list default="true" id="fda49921-6ecf-410e-8a36-dd66d5c62c59" name="Changes" comment="missing epitope">
+      <change afterPath="$PROJECT_DIR$/tests/split_rec_lig.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docker-docknscore/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/docker-docknscore/Dockerfile" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/docker-docknscore/dock-n-score.py" beforeDir="false" afterPath="$PROJECT_DIR$/docker-docknscore/dock-n-score.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/run_igfold.sh" beforeDir="false" afterPath="$PROJECT_DIR$/run_igfold.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/run_score.sh" beforeDir="false" afterPath="$PROJECT_DIR$/run_score.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_onion.sh" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_onion.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_score.sh" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_score.sh" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -68,11 +69,12 @@
     <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/docker-docknscore" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/tests" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PythonContentEntriesConfigurable" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/tests" />
       <recent name="$PROJECT_DIR$/docker-docknscore" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
@@ -94,7 +96,7 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/main.py" />
-      <option name="PARAMETERS" value="--emb=1 --sigma=0.2 --dla=0.0 --popsize=24 --maxiter=21 --mega=1 --rosetta=0 --renum=0 --score=1" />
+      <option name="PARAMETERS" value="--emb=1 --sigma=0.05 --dla=0.0 --popsize=24 --maxiter=21 --mega=1 --rosetta=0 --renum=0 --score=0" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
@@ -172,11 +174,11 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.main" />
-        <item itemvalue="Shell Script.test_onion.sh" />
-        <item itemvalue="Docker.docker-docknscore/Dockerfile" />
-        <item itemvalue="Python.test_dock_score" />
         <item itemvalue="Shell Script.test_score.sh" />
+        <item itemvalue="Python.main" />
+        <item itemvalue="Docker.docker-docknscore/Dockerfile" />
+        <item itemvalue="Shell Script.test_onion.sh" />
+        <item itemvalue="Python.test_dock_score" />
       </list>
     </recent_temporary>
   </component>
@@ -420,7 +422,21 @@
       <option name="project" value="LOCAL" />
       <updated>1656411968380</updated>
     </task>
-    <option name="localTasksCounter" value="34" />
+    <task id="LOCAL-00034" summary="onion score added to container">
+      <created>1656453228747</created>
+      <option name="number" value="00034" />
+      <option name="presentableId" value="LOCAL-00034" />
+      <option name="project" value="LOCAL" />
+      <updated>1656453228747</updated>
+    </task>
+    <task id="LOCAL-00035" summary="missing epitope">
+      <created>1656492388172</created>
+      <option name="number" value="00035" />
+      <option name="presentableId" value="LOCAL-00035" />
+      <option name="project" value="LOCAL" />
+      <updated>1656492388172</updated>
+    </task>
+    <option name="localTasksCounter" value="36" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -447,7 +463,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="dockes to a list of epitopes and calc average score" />
     <MESSAGE value="updated debug output and 7e3c aligned" />
     <MESSAGE value="bug in print line fixed" />
     <MESSAGE value="increased alignment RMS" />
@@ -472,7 +487,8 @@
     <MESSAGE value="disabling DLA added. More tests done" />
     <MESSAGE value="onion score added" />
     <MESSAGE value="onion score added to container" />
-    <option name="LAST_COMMIT_MESSAGE" value="onion score added to container" />
+    <MESSAGE value="missing epitope" />
+    <option name="LAST_COMMIT_MESSAGE" value="missing epitope" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
