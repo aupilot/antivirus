@@ -52,7 +52,7 @@ block_distance = 38.0 * 0.4   # Å , 0.4 from bottom does not add to megadock sc
 # starting_point = "2dd8_Fv.fasta"
 # starting_point = "7e3c-Fv.fasta"
 # starting_point = "1sy6-Fv.fasta"
-starting_point = "7ps7-Fv.fasta"
+starting_point = "7urs-Fv.fasta"
 
 # we calc this as max len for now in main()
 # chain_max_length = 0
@@ -279,6 +279,9 @@ if __name__ == '__main__':
     score_system = args.score
 
     print(time.asctime())
+    print(f"Starting from: {starting_point}")
+    for i, e in enumerate(spike_list):
+        print(f"Epitope {i}: {e}")
 
     if args.emb == 0:
         print('Using ESM embedding esm1v_t33_650M_UR90S_5')
