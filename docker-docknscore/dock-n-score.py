@@ -139,10 +139,13 @@ def vina_score():
 
         affinity = float(affinity_txt.split()[1])
         scores.append(affinity)
-        if affinity < best_affinity and affinity < -0.7:
-            best_affinity = affinity
-            # copy the whole decoy to save the complex
-            shutil.copy(good_decoys+dec, f"{save_best}dec_vina_{-affinity:.2f}.pdb")
+
+        if args.score == 0:
+            # Only save the whole decoy if we have vina as the score method. Otherwise, we save average score in onion_score()
+            if affinity < best_affinity and affinity < -0.7:
+                best_affinity = affinity
+                # copy the whole decoy to save the complex
+                shutil.copy(good_decoys+dec, f"{save_best}dec_vina_{-affinity:.2f}.pdb")
 
     if len(scores) == 0:
         print("No valid decoys generated, nothing to score")
@@ -151,7 +154,7 @@ def vina_score():
         return np.min(np.array(scores))
 
 
-def onion_score():
+def onion_score(score_vina=None):
     decoy_list = listdir(good_decoys)
 
     scores = []
@@ -167,22 +170,27 @@ def onion_score():
     # for d in range(n_scored_decoys):
     #     pdbfh = open(f"/opt/var/decoys/decoy.{d+1}.pdb", 'r')
         pdb_name = good_decoys+dec
-
         output = subprocess.run(["/bin/bash", "/opt/onionnet/kir01/onion_score.sh", pdb_name], capture_output=True, check=True)
 
         out_text = output.stdout.decode().split("\n")
-        affinity_lines  = [match for match in out_text if "pKa" in match]
-
+        affinity_lines = [match for match in out_text if "pKa" in match]
         affinity_txt = affinity_lines[0]
-
         affinity = 2 - math.log2(float(affinity_txt.split()[1]))
         print(f"Dec {decoy_no} {affinity_txt}, adj {affinity} ")
-
         scores.append(affinity)
-        if affinity < best_affinity and affinity < -0.7:
-            best_affinity = affinity
-            # copy the whole decoy to save the complex
-            shutil.copy(good_decoys+dec, f"{save_best}dec_oni_{-affinity:.2f}.pdb")
+
+        # take into account the vina score to save the best decoy
+        if score_vina is not None:
+            affinity = (affinity + score_vina) / 2.
+            if affinity < best_affinity and affinity < -0.7:
+                best_affinity = affinity
+                # copy the whole decoy to save the complex
+                shutil.copy(good_decoys+dec, f"{save_best}dec_avg_{-affinity:.2f}.pdb")
+        else:
+            if affinity < best_affinity and affinity < -0.7:
+                best_affinity = affinity
+                # copy the whole decoy to save the complex
+                shutil.copy(good_decoys+dec, f"{save_best}dec_oni_{-affinity:.2f}.pdb")
 
     if len(scores) == 0:
         print("No valid decoys generated, nothing to score")
@@ -258,11 +266,11 @@ if __name__ == '__main__':
         min_score = vina_score()
     elif args.score == 1:
         print('Scoring with OnionNet:')
-        min_score = onion_score()
+        min_score = onion_score(score_vina=None)
     elif args.score == 2:
         print('Scoring with both Vina and OnionNet:')
         min_score_vina = vina_score()
-        min_score_onion = onion_score()
+        min_score_onion = onion_score(min_score_vina)
         min_score = (min_score_vina + min_score_onion) / 2.
     else:
         raise Exception("Invalid Scoring Method!")
