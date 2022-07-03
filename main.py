@@ -325,6 +325,7 @@ if __name__ == '__main__':
         os.mkdir("data")
 
     x0 = seq2np(start_seq_spacers).flatten()
+    print(f"X0 max/min {x0.max()} {x0.min()}")
 
     fun = double_fun_igfold
 
@@ -342,8 +343,10 @@ if __name__ == '__main__':
 
     if args.emb == 0:
         limit = 80.0
+    elif args.emb == 2:
+        limit = 4.0
     else:
-        limit = 2.0
+        limit = 2.2
     # # cfun = cma.ConstrainedFitnessAL(fun, constraints)  # unconstrained function with adaptive Lagrange multipliers
     es = cma.CMAEvolutionStrategy(x0, sigma0,
                                   inopts={
