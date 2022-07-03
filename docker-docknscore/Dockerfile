@@ -33,8 +33,8 @@ RUN pip install scikit-learn==0.22.1 pandas
 
 WORKDIR /opt
 RUN git clone https://github.com/aupilot/DLA-Ranker.git && \
-    rm -Rf /opt/DLA-Ranker/Models/BM5 && \
-    rm -Rf /opt/DLA-Ranker/Models/CCD4PPI
+    rm -Rf /opt/DLA-Ranker/Models/CCD4PPI && \
+    rm -Rf /opt/DLA-Ranker/Models/BM5
 
 # we need these to run naccess crap
 RUN apt-get install -y csh libgfortran5

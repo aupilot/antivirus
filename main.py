@@ -214,7 +214,7 @@ def double_fun_igfold(X):
             # run dock & score to (multiple) paratopes
             output = subprocess.run(
                 ["./run_score.sh", f"/workdir/th.{thread_no}/{ig_fold_aligned_pdb}", "/workdir/" + spike, f"{dla_threshold}",
-                 f"{mega_type}", f"{score_system}"],
+                 f"{mega_type}", f"{score_system}", f"{megad_models}"],
                 capture_output=True, check=True)  # these paths are inside the container!
             best_score_sep[s,thread_no] = float(output.stdout.split()[-1])                          # TODO: perhaps there is a better way of combining scores
 
@@ -264,7 +264,10 @@ def get_args():
         Send predicted structure to AbNum server for Chothia renumbering (1)
     """)
     parser.add_argument("--score", type=int, default=0, help="""
-        Type of scoring. 0 - Vina, 1 - OnionNet. Onion could be used for screening, but does not look good for optimising. Also very slow
+        Type of scoring. 0 - Vina, 1 - OnionNet, 2 - average of Vina/Onion
+    """)
+    parser.add_argument("--mdm", type=int, default=3, help="""
+        The number of megadock models we're evaluating. 6 works well, but too slow if Onion used for scoring, so default to 3
     """)
 
     return parser.parse_args()
@@ -277,6 +280,15 @@ if __name__ == '__main__':
     use_rosetta = args.rosetta
     renumber = args.renum
     score_system = args.score
+    if score_system == 0:
+        print("Scoring with Autodock Vina")
+    elif score_system == 1:
+        print("Scoring with OnionNet")
+    elif score_system == 2:
+        print("Scoring with Vina + OnionNet")
+    else:
+        print("Incorrect scoring system requested!")
+    megad_models = args.mdm
 
     print(time.asctime())
     print(f"Starting from: {starting_point}")

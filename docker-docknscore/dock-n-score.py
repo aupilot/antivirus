@@ -210,7 +210,10 @@ def get_args():
         Use kir optimised Megadock (1) or not (0).
     """)
     parser.add_argument("score", type=int, default=0, help="""
-        Score method. 0 (default): vina, 1: onionnet.
+        Score method. 0 (default): vina, 1: onionnet, 2: average of both
+    """)
+    parser.add_argument("mdm", type=int, default=3, help="""
+        The number of megadock models we're evaluating. 6 works well, but too slow if Onion used for scoring, so default to 3
     """)
 
     return parser.parse_args()
@@ -238,15 +241,17 @@ if __name__ == '__main__':
 
     if args.dla == 0.0:
         print("Skipping DLARanking")
-        # we just copy 6 first decoys
+        # we just copy args.mdm first decoys
         shutil.rmtree(good_decoys, ignore_errors=True)
         os.makedirs(good_decoys)
-        # copy only 5 best decoys
-        for dec_no in range(1,5+1):
+        # copy only 5 best decoys (actually args.mdm sets the number now
+        for dec_no in range(1, args.mdm + 1):
             shutil.copy(f"{decoy_dir}decoy.{dec_no}.pdb", good_decoys)
     else:
         print(f"Re-score with DLA, thr: {args.dla}")
-        output = subprocess.run(["python3","/opt/DLA-Ranker/dla_ranker.py", f"{args.dla}"], capture_output=False, check=True)
+        if args.mdm < 6:
+            print(f"Recommended model number (mdm flag) is 6 or more for DLARanker, but {args.mdm} requested")
+        output = subprocess.run(["python3","/opt/DLA-Ranker/dla_ranker.py", f"{args.dla}", f"{args.mdm}"], capture_output=False, check=True)
 
     if args.score == 0:
         print('Scoring with Vina:')
@@ -254,7 +259,12 @@ if __name__ == '__main__':
     elif args.score == 1:
         print('Scoring with OnionNet:')
         min_score = onion_score()
+    elif args.score == 2:
+        print('Scoring with both Vina and OnionNet:')
+        min_score_vina = vina_score()
+        min_score_onion = onion_score()
+        min_score = (min_score_vina + min_score_onion) / 2.
     else:
-        raise Exception("Invalid Scoring Method")
+        raise Exception("Invalid Scoring Method!")
 
     print(f"The best score is {min_score}")
