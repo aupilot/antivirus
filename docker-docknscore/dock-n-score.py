@@ -139,10 +139,10 @@ def vina_score():
 
         affinity = float(affinity_txt.split()[1])
         scores.append(affinity)
-        if affinity < best_affinity and affinity < -0.4:
+        if affinity < best_affinity and affinity < -0.7:
             best_affinity = affinity
             # copy the whole decoy to save the complex
-            shutil.copy(good_decoys+dec, f"{save_best}dec_{-affinity:.2f}.pdb")
+            shutil.copy(good_decoys+dec, f"{save_best}dec_vina_{-affinity:.2f}.pdb")
 
     if len(scores) == 0:
         print("No valid decoys generated, nothing to score")
@@ -179,10 +179,10 @@ def onion_score():
         print(f"Dec {decoy_no} {affinity_txt}, adj {affinity} ")
 
         scores.append(affinity)
-        if affinity < best_affinity and affinity < -0.4:
+        if affinity < best_affinity and affinity < -0.7:
             best_affinity = affinity
             # copy the whole decoy to save the complex
-            shutil.copy(good_decoys+dec, f"{save_best}dec_{-affinity:.2f}.pdb")
+            shutil.copy(good_decoys+dec, f"{save_best}dec_oni_{-affinity:.2f}.pdb")
 
     if len(scores) == 0:
         print("No valid decoys generated, nothing to score")
