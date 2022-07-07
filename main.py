@@ -52,7 +52,9 @@ block_distance = 38.0 * 0.4   # Å , 0.4 from bottom does not add to megadock sc
 # starting_point = "2dd8_Fv.fasta"
 # starting_point = "7e3c-Fv.fasta"
 # starting_point = "1sy6-Fv.fasta"
-starting_point = "7urs-Fv.fasta"
+# starting_point = "7urs-Fv.fasta"
+# starting_point = "7lm9-Fv.fasta"
+starting_point = "6phd-Fv.fasta"
 
 # we calc this as max len for now in main()
 # chain_max_length = 0
@@ -342,7 +344,7 @@ if __name__ == '__main__':
     sigma0 = args.sigma  # initial standard deviation to sample new solutions - should be ~ 1/4 of range???
 
     if args.emb == 0:
-        limit = 80.0
+        limit = 30. #80.0
     elif args.emb == 2:
         limit = 4.0
     else:
